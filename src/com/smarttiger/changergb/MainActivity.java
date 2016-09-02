@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.R.integer;
+import com.smarttiger.SweetAlert.widget.ShowDialogUtil;
+
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -56,6 +58,8 @@ public class MainActivity extends Activity {
 	private float imageviewWidth;
 	private float imageviewHeight;
 	
+	private ProgressDialog pDialog;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -97,6 +101,10 @@ public class MainActivity extends Activity {
 //				bitmapNew = changeBitmapRGB(bitmap, rgbOld, rgbNew);
 //				imageView.setImageBitmap(bitmapNew);
 //				imageBitmap = imageView.getDrawingCache();
+				
+//				pDialog = showProgress(context, "替换中");
+
+				ShowDialogUtil.showRainbowProgress(context, "替换中");
 				
 				new ChangeBitmapRGB().execute(rgbOld, rgbNew);
 			}
@@ -208,7 +216,7 @@ public class MainActivity extends Activity {
     	for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				int color = mBitmap.getPixel(x, y);
-				System.out.println("x-"+x+"-y-"+y+"-color="+color);
+//				System.out.println("x-"+x+"-y-"+y+"-color="+color);
 				if(color == mColor)
 					newBitmap.setPixel(x, y, newColor);
 //				else
@@ -231,6 +239,8 @@ public class MainActivity extends Activity {
 
 			imageView.setImageBitmap(result);
 			imageBitmap = imageView.getDrawingCache();
+//			pDialog.cancel();
+			ShowDialogUtil.closeRainbowProgress();
 		};
     }
     
@@ -352,6 +362,18 @@ public class MainActivity extends Activity {
 			return false;
 		}
 		
+	}
+	
+	/**
+	 * 显示蓝色圆形进度条，可以通过返回值调用pDialog.cancel();来结束进度条。
+	 */
+	private ProgressDialog showProgress(Context context, String title)
+	{
+		ProgressDialog pDialog = new ProgressDialog(context, ProgressDialog.STYLE_SPINNER);
+		pDialog.setTitle(title);
+		pDialog.setCanceledOnTouchOutside(false);
+		pDialog.show();
+		return pDialog;
 	}
 	
 	
