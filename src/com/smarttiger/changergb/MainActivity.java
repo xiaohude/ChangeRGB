@@ -50,15 +50,12 @@ public class MainActivity extends Activity {
 	private TextView textView;
 	
 	private Bitmap bitmap;
-	private Bitmap bitmapNew;
 	private Bitmap imageBitmap;//屏幕取色时用的
 	
 	private int bitmapWidth;
 	private int bitmapHeight;
 	private float imageviewWidth;
 	private float imageviewHeight;
-	
-	private ProgressDialog pDialog;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +82,10 @@ public class MainActivity extends Activity {
 				int rgbNew = HexStringToInt(colorNew);
 				
 				if(TextUtils.isEmpty(colorOld)) {
-					bitmapNew = getAlphaBitmap(bitmap, rgbNew);
-					imageView.setImageBitmap(bitmapNew);
-					bitmap = bitmapNew;
+					bitmap = getAlphaBitmap(bitmap, rgbNew);
+					imageView.setImageBitmap(bitmap);
+					imageView.buildDrawingCache();
+					imageBitmap = imageView.getDrawingCache();
 					return;
 				} else if(!isColorString(colorOld)){
 					Toast toast = Toast.makeText(context, "格式错误！(f0f0f0)", 0);
@@ -97,13 +95,7 @@ public class MainActivity extends Activity {
 				}
 				
 				int rgbOld = HexStringToInt(colorOld);
-
-//				bitmapNew = changeBitmapRGB(bitmap, rgbOld, rgbNew);
-//				imageView.setImageBitmap(bitmapNew);
-//				imageBitmap = imageView.getDrawingCache();
 				
-//				pDialog = showProgress(context, "替换中");
-
 				ShowDialogUtil.showRainbowProgress(context, "替换中");
 				
 				new ChangeBitmapRGB().execute(rgbOld, rgbNew);
@@ -121,11 +113,11 @@ public class MainActivity extends Activity {
 		});
 		imageView.setOnTouchListener(new OnGetColorTouchListener());
 		
-		bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic);
-		bitmapNew = getAlphaBitmap(bitmap, 0xff65bbd2);//0xffd59591,b8a59f
-		imageView.setImageBitmap(bitmapNew);
-		bitmap = bitmapNew;
 		
+		bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic);
+		
+		bitmap = getAlphaBitmap(bitmap, 0xff65bbd2);//0xffd59591,b8a59f
+		imageView.setImageBitmap(bitmap);
 		
 //		bitmapNew = changeBitmapRGB(bitmap, 0, 0xffff0000);
 //		imageView.setImageBitmap(bitmapNew);
@@ -236,10 +228,14 @@ public class MainActivity extends Activity {
 		}
     	
 		protected void onPostExecute(Bitmap result) {
-
+			
 			imageView.setImageBitmap(result);
+			
+			bitmap = result;
+			imageView.buildDrawingCache();
 			imageBitmap = imageView.getDrawingCache();
-//			pDialog.cancel();
+			editOld.setText(editNew.getText());
+			
 			ShowDialogUtil.closeRainbowProgress();
 		};
     }
@@ -364,24 +360,10 @@ public class MainActivity extends Activity {
 		
 	}
 	
-	/**
-	 * 显示蓝色圆形进度条，可以通过返回值调用pDialog.cancel();来结束进度条。
-	 */
-	private ProgressDialog showProgress(Context context, String title)
-	{
-		ProgressDialog pDialog = new ProgressDialog(context, ProgressDialog.STYLE_SPINNER);
-		pDialog.setTitle(title);
-		pDialog.setCanceledOnTouchOutside(false);
-		pDialog.show();
-		return pDialog;
-	}
-	
-	
     @Override
     protected void onDestroy() {
     	// TODO Auto-generated method stub
     	bitmap.recycle();
-    	bitmapNew.recycle();
     	super.onDestroy();
     }
 }

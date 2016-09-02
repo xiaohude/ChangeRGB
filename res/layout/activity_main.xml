@@ -14,31 +14,41 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
-			android:text="3e2c26"
-			android:hint="原始颜色值(ff00ff)" />
+			android:text="65bbd2"
+			android:hint="旧颜色值(ff00ff)" />
 	    <TextView 
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="改为："
+			android:text="&lt;-替换-&gt;"
 	        />
 	    <EditText 
 			android:id="@+id/edit_new"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
-			android:hint="替换颜色值(ff00ff)" />
+			android:hint="新颜色值(ff00ff)" />
     </LinearLayout>
-    <Button 
-        android:id="@+id/test_button"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Test" />
     
-    <Button 
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onGetPic"
-        android:text="选取图片" />
+	<LinearLayout 
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    >
+	    <Button 
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:onClick="onGetPic"
+	        android:text="选取图片" />
+	    
+	    <Button 
+	        android:id="@+id/test_button"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:text="替换颜色" />
+    </LinearLayout>
+    
     <TextView 
         android:id="@+id/text_view"
 		android:layout_width="wrap_content"
