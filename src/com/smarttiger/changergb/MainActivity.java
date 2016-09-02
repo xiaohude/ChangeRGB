@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import com.smarttiger.SweetAlert.widget.ShowDialogUtil;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -20,13 +19,16 @@ import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -64,6 +66,7 @@ public class MainActivity extends Activity {
 		context = this;
 		editOld = (EditText) findViewById(R.id.edit_old);
 		editNew = (EditText) findViewById(R.id.edit_new);
+		editNew.addTextChangedListener(new colorTextWatcher());
 		textView = (TextView) findViewById(R.id.text_view);
 		button = (Button) findViewById(R.id.test_button);
 		button.setOnClickListener(new OnClickListener() {
@@ -164,9 +167,9 @@ public class MainActivity extends Activity {
 	}
 	//判断是否为ff00ff格式
 	private boolean isColorString(String str) {
-		if(str.length() != 6)
+		if(str.length() == 0 || str.length() >6)
 			return false;
-		Pattern pattern = Pattern.compile("[0-9,a,b,c,d,e,f]{6}");
+		Pattern pattern = Pattern.compile("[0-9,a,b,c,d,e,f]{1,6}");
         Matcher isColor = pattern.matcher(str);
         if(isColor.matches())
               return true;
@@ -208,7 +211,6 @@ public class MainActivity extends Activity {
     	for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				int color = mBitmap.getPixel(x, y);
-//				System.out.println("x-"+x+"-y-"+y+"-color="+color);
 				if(color == mColor)
 					newBitmap.setPixel(x, y, newColor);
 //				else
@@ -235,6 +237,8 @@ public class MainActivity extends Activity {
 			imageView.buildDrawingCache();
 			imageBitmap = imageView.getDrawingCache();
 			editOld.setText(editNew.getText());
+			editOld.setBackgroundColor(HexStringToInt(editNew.getText().toString()));
+			editOld.setTextColor(editNew.getTextColors());
 			
 			ShowDialogUtil.closeRainbowProgress();
 		};
@@ -331,15 +335,26 @@ public class MainActivity extends Activity {
 			if(bx < 0) bx = 0;
 			if(by < 0) by = 0;
 
-			textView.setText("bitmapWidth="+ bitmapWidth +"bitmapHeight="+bitmapHeight+"\n");  
-			textView.append("imageviewWidth="+ imageviewWidth +"imageviewHeight="+imageviewHeight+"\n"); 
-			textView.append("x="+x+"y="+y+"\n");
-			textView.append("bx="+bx+"by="+by+"\n");
+//			textView.setText("bitmapWidth="+ bitmapWidth +"bitmapHeight="+bitmapHeight+"\n");  
+//			textView.append("imageviewWidth="+ imageviewWidth +"imageviewHeight="+imageviewHeight+"\n"); 
+//			textView.append("x="+x+"y="+y+"\n");
+//			textView.append("bx="+bx+"by="+by+"\n");
 			
 			
 			int color = imageBitmap.getPixel(bx, by);
-			String hexColor = Integer.toHexString(color + 0x01000000);
-			editOld.setText(""+hexColor);
+			String hexColor;
+			if(color == 0) {
+				hexColor = "ffffff";
+				editOld.setText(""+hexColor);
+				editOld.setBackgroundColor(color);
+				editOld.setTextColor(0xff202020);
+			}
+			else {
+				hexColor = Integer.toHexString(color + 0x01000000);
+				editOld.setText(""+hexColor);
+				editOld.setBackgroundColor(color);
+				editOld.setTextColor(getTextColorForBackgroud(color));
+			}
 			 
             int action =event.getAction();
             if(action==MotionEvent.ACTION_DOWN){  
@@ -356,6 +371,50 @@ public class MainActivity extends Activity {
             }  
               
 			return false;
+		}
+		
+	}
+	
+	/**
+	 * 根据TextView的背景色，设置TextView的字体颜色，用来防止字体颜色和背景色相似。
+	 */
+	private int getTextColorForBackgroud(int bgColor) {
+		int textColor = 0xff202020;
+		int red = Color.red(bgColor);
+		int green = Color.green(bgColor);
+		int blue = Color.blue(bgColor);
+		textView.setText(" red="+ red +"\n green="+green+"\n blue="+blue);
+		if(red < 100 && green < 100)
+			textColor = 0xfff0f0f0;
+		return textColor;
+	}
+	
+	/** 监听Edit，自动根据输入颜色改变背景色。 */
+	class colorTextWatcher implements TextWatcher {
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {}
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {}
+
+		private Toast toast;//防止一直显示同样的Toast
+		@Override
+		public void afterTextChanged(Editable s) {
+			// TODO Auto-generated method stub
+			int bgColor = 0xffffffff;
+			if(isColorString(s.toString()))
+				bgColor = HexStringToInt(s.toString());
+			else {
+				if(toast != null)
+					toast.cancel();
+				toast = Toast.makeText(context, "格式错误！(f0f0f0)", Toast.LENGTH_SHORT);
+				toast.setGravity(Gravity.CENTER, 0, -400);
+				toast.show();
+			}
+				
+			editNew.setBackgroundColor(bgColor);
+			editNew.setTextColor(getTextColorForBackgroud(bgColor));
 		}
 		
 	}
