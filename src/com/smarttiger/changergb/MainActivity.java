@@ -109,8 +109,10 @@ public class MainActivity extends Activity {
 			@Override
 			public boolean onLongClick(View v) {
 				// TODO Auto-generated method stub
-				Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
-				saveBitmap(bitmap);
+				if(!isMoveTouch) {
+					Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+					saveBitmap(bitmap);
+				}
 				return false;
 			}
 		});
@@ -318,6 +320,10 @@ public class MainActivity extends Activity {
 	    }
 	}
 	    
+	
+	private boolean isMoveTouch = false;
+	private float downX = 0;
+	private float downY = 0;
 	class OnGetColorTouchListener implements OnTouchListener {
 
 		@Override
@@ -358,19 +364,27 @@ public class MainActivity extends Activity {
 			 
             int action =event.getAction();
             if(action==MotionEvent.ACTION_DOWN){  
+            	isMoveTouch = false;
                 System.out.println("down");  
+                downX = event.getX();
+                downY = event.getY();
             }
             else if(action==MotionEvent.ACTION_MOVE){  
                 System.out.println("move");  
+                float moveX = event.getX();
+                float moveY = event.getY();
+                System.out.println("moveX=="+moveX+"--moveY=="+moveY);
+                if(Math.abs(downX - moveX) >10 || Math.abs(downY - moveY) > 10)
+                	isMoveTouch = true;
             }
-            else if(action==MotionEvent.ACTION_UP){  
+            else if(action==MotionEvent.ACTION_UP){ 
                 System.out.println("up");  
             }
             else if(action==MotionEvent.ACTION_CANCEL){  
                 System.out.println("cancel");  
             }  
               
-			return false;
+			return isMoveTouch;
 		}
 		
 	}

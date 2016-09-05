@@ -153,25 +153,25 @@ public class ShowDialogUtil {
 				i++;
 				i = i%7;
                 switch (i){
-                    case 0:
+                    case 1:
                     	rainbowProgress.getProgressHelper().setBarColor(context.getResources().getColor(R.color.rainbow_red));
                         break;
-                    case 1:
+                    case 2:
                     	rainbowProgress.getProgressHelper().setBarColor(context.getResources().getColor(R.color.rainbow_orange));
                         break;
-                    case 2:
+                    case 3:
                     	rainbowProgress.getProgressHelper().setBarColor(context.getResources().getColor(R.color.rainbow_yellow));
                         break;
-                    case 3:
+                    case 4:
                     	rainbowProgress.getProgressHelper().setBarColor(context.getResources().getColor(R.color.rainbow_green));
                         break;
-                    case 4:
+                    case 5:
                     	rainbowProgress.getProgressHelper().setBarColor(context.getResources().getColor(R.color.rainbow_cyan));
                         break;
-                    case 5:
+                    case 6:
                     	rainbowProgress.getProgressHelper().setBarColor(context.getResources().getColor(R.color.rainbow_blue));
                         break;
-                    case 6:
+                    case 0:
                     	rainbowProgress.getProgressHelper().setBarColor(context.getResources().getColor(R.color.rainbow_purple));
                         break;
                 }
@@ -184,7 +184,6 @@ public class ShowDialogUtil {
 	 */
 	public static void closeRainbowProgress()
 	{
-		i = -1;
 		rainbowProgress.setTitleText("成功!")
         	.changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
 		
