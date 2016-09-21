@@ -295,6 +295,7 @@ public class MainActivity extends Activity {
     
 	//使用自带图库选择照片
 	private static final int RESULT_LOAD_IMAGE = 1001;
+	private String picturePath;
 	public void onGetPic(View view) {
 		Intent i = new Intent(  
 				Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);  
@@ -312,7 +313,7 @@ public class MainActivity extends Activity {
 	                filePathColumn, null, null, null);  
 	        cursor.moveToFirst();  
 	        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);  
-	        String picturePath = cursor.getString(columnIndex);  
+	        picturePath = cursor.getString(columnIndex);  
 	        cursor.close();
 	        
 	        bitmap = getFileBitmap(picturePath);
@@ -438,5 +439,14 @@ public class MainActivity extends Activity {
     	// TODO Auto-generated method stub
     	bitmap.recycle();
     	super.onDestroy();
+    }
+    
+
+	public static final String PICTURE_PATH = "picture_path";
+    //测量截图上控件尺寸
+    public void onMeasure(View view) {
+    	Intent intent = new Intent(this, MeasureActivity.class);
+    	intent.putExtra(PICTURE_PATH, picturePath);
+    	startActivity(intent);
     }
 }
