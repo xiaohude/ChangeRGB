@@ -23,6 +23,9 @@ public class RulerView extends View {
 	private float xmm_saved;
 	private Rect rectBtn;
 	
+
+	private float xdp = 3;//dp单位
+	
 	private float xmm;//毫米单位
 	private float ruler_length;
 	private float ruler_width;
@@ -67,7 +70,7 @@ public class RulerView extends View {
 	public void init(Context context, DisplayMetrics dm,int length) {
 		find_pixal(dm);
 		ruler_length = length * xmm * 10; // 设置一开始为length厘米的尺子
-		ruler_width = 180;
+		ruler_width = 200;
 		mid_point.set((float) (ruler_length * 0.5), 0);
 		rect = new Rect((int)(mid_point.x-ruler_length/2), 
 						(int) mid_point.y, 
@@ -78,7 +81,7 @@ public class RulerView extends View {
 		paint = new Paint();
 		paint.setColor(Color.GREEN);
 		paint.setStyle(Style.STROKE);
-		paint.setStrokeWidth(2);
+		paint.setStrokeWidth(1);
 		
 		paintTxt = new Paint();
 		paintTxt.setColor(Color.GREEN);
@@ -126,19 +129,22 @@ public class RulerView extends View {
 		if(!isCalibration) {
 			for (int i = 0; i < ruler_length / xmm; i++) {
 				float Left = mid_point.x - ruler_length / 2;
-				if (i % 10 == 0 && i != 0) {
-					canvas.drawLine(Left + i * xmm, mid_point.y, Left + i * xmm,
-							mid_point.y + 60, paint);
-					canvas.drawText(Integer.toString(i / 10), Left + i * xmm,
-							mid_point.y + 70, paintTxt);
-				} else if (i == 0) {
-					canvas.drawLine(Left + i * xmm, mid_point.y, Left + i * xmm,
-							mid_point.y + 60, paint);
-					canvas.drawText(Integer.toString(i / 5) + "cm", Left + i * xmm,
-							mid_point.y + 70, paintTxt);
+				if (i == 0) {
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 60, paint);
+					canvas.drawText("0cm",
+									Left + i * xmm, mid_point.y + 70, paintTxt);
+				} else if (i % 10 == 0) {
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 60, paint);
+					canvas.drawText(Integer.toString(i / 10),
+									Left + i * xmm, mid_point.y + 70, paintTxt);
+				} else if ((i+5) % 10 == 0) {
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 40, paint);
 				} else {
-					canvas.drawLine(Left + i * xmm, mid_point.y, Left + i * xmm,
-							mid_point.y + 30, paint);
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 25, paint);
 				}
 			}
 			canvas.drawRect(rectBtn, paint);
@@ -147,20 +153,58 @@ public class RulerView extends View {
 		else {
 			for (int i = 0; i < ruler_length / xmm; i++) {
 				float Left = mid_point.x - ruler_length / 2;
-				if (i == 63) {
-					canvas.drawLine(Left + i * xmm, mid_point.y, Left + i * xmm, mid_point.y + 60, paint);
-					canvas.drawText("1,5元", Left + i * xmm -30, mid_point.y + 90, paintTxt);
-					canvas.drawText("高度", Left + i * xmm -30, mid_point.y + 125, paintTxt);
+				if (i == 0) {
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 35, paint);
+					canvas.drawText("0cm",
+									Left + i * xmm, mid_point.y + 70, paintTxt);
+				} else if (i == 63) {
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 60, paint);
+					canvas.drawText("1,5元",
+									Left + i * xmm -30, mid_point.y + 90, paintTxt);
+					canvas.drawText("高度",
+									Left + i * xmm -30, mid_point.y + 125, paintTxt);
 				} else if (i == 70) {
-					canvas.drawLine(Left + i * xmm, mid_point.y, Left + i * xmm, mid_point.y + 60, paint);
-					canvas.drawText("10元高度" , Left + i * xmm -30, mid_point.y + 90, paintTxt);
-					canvas.drawText("20元高度", Left + i * xmm -30, mid_point.y + 125, paintTxt);
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 60, paint);
+					canvas.drawText("10元高度" ,
+									Left + i * xmm -30, mid_point.y + 90, paintTxt);
+					canvas.drawText("20元高度",
+									Left + i * xmm -30, mid_point.y + 125, paintTxt);
+				} else if (i % 10 == 0) {
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 35, paint);
 				} else {
-					canvas.drawLine(Left + i * xmm, mid_point.y, Left + i * xmm, mid_point.y + 15, paint);
+					canvas.drawLine(Left + i * xmm, mid_point.y,
+									Left + i * xmm, mid_point.y + 15, paint);
 				}
 			}
 			canvas.drawRect(rectBtn, paint);
 			canvas.drawText("完成", mid_point.x+ruler_length/2+ruler_width/2, mid_point.y+ruler_width/2+15,  paintBtn);
+		}
+		
+		for (int i = 0; i < ruler_length / xdp; i++) {
+			float Left = mid_point.x - ruler_length / 2;
+			if (i == 0) {
+				canvas.drawLine(Left + i*xdp, mid_point.y+ruler_width,
+								Left + i*xdp, mid_point.y+ruler_width - 60, paint);
+				canvas.drawText("0dp",
+								Left + i*xdp, mid_point.y+ruler_width - 70, paintTxt);
+			}
+			else if (i % 10 == 0) {
+				canvas.drawLine(Left + i*xdp, mid_point.y+ruler_width, 
+								Left + i*xdp, mid_point.y+ruler_width - 40, paint);
+			if(i % 50 == 0) {
+				canvas.drawLine(Left + i*xdp, mid_point.y+ruler_width, 
+								Left + i*xdp, mid_point.y+ruler_width - 60, paint);
+				canvas.drawText(Integer.toString(i),
+								Left + i*xdp, mid_point.y+ruler_width - 70, paintTxt);
+			}
+			} else if (i % 5 == 0)  {
+				canvas.drawLine(Left + i*xdp, mid_point.y+ruler_width,
+								Left + i*xdp, mid_point.y+ruler_width - 25, paint);
+			}
 		}
 		
 		canvas.restore();
@@ -261,11 +305,13 @@ public class RulerView extends View {
 		return true;
 	}
 
-	/** 校准尺子 */
+	/** 初始化单位，校准尺子 */
 	protected void find_pixal(DisplayMetrics dm) {
 		calibration = getCalibration();
 		xmm_saved = (float) (dm.xdpi / 25.4);
 		xmm = xmm_saved * calibration; // 单位都是pixal
+		
+		xdp = dm.density;
 	}
 
 	/** 获取两指成线的水平角度 */
