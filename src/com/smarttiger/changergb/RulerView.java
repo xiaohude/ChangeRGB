@@ -195,22 +195,25 @@ public class RulerView extends View {
 			else if (i % 10 == 0) {
 				canvas.drawLine(Left + i*xdp, mid_point.y+ruler_width, 
 								Left + i*xdp, mid_point.y+ruler_width - 40, paint);
-			if(i % 50 == 0) {
+				if(i % 50 == 0) {
 				canvas.drawLine(Left + i*xdp, mid_point.y+ruler_width, 
 								Left + i*xdp, mid_point.y+ruler_width - 60, paint);
 				canvas.drawText(Integer.toString(i),
 								Left + i*xdp, mid_point.y+ruler_width - 70, paintTxt);
-			}
-			} else if (i % 5 == 0)  {
+				}
+			} else if (i % 5 == 0) {
 				canvas.drawLine(Left + i*xdp, mid_point.y+ruler_width,
 								Left + i*xdp, mid_point.y+ruler_width - 25, paint);
-			}
+			} else {
+				canvas.drawLine(Left + i*xdp, mid_point.y+ruler_width,
+								Left + i*xdp, mid_point.y+ruler_width - 10, paint);
+			} 
 		}
 		
 		canvas.restore();
 	}
 
-	
+	private long mLastTime, mCurTime;
 	public boolean onTouchEvent(MotionEvent event) {
 		PointF touchPoint1;
 		switch (event.getAction() & MotionEvent.ACTION_MASK) {
@@ -221,6 +224,14 @@ public class RulerView extends View {
 				MODE = "DRAG";
 				finger_first_down.set(event.getX(), event.getY());
 				mid_point_saved.set(mid_point);
+				
+				//双击尺子置横竖
+				mLastTime = mCurTime; 
+				mCurTime = System.currentTimeMillis();
+				if (mCurTime - mLastTime < 300) {
+					angle_rotate = angle_rotate==90?0:90;
+					invalidate();
+				}
 			}
 			else if(rectBtn.contains((int) touchPoint1.x, (int) touchPoint1.y)) {
 				if(isCalibration)
@@ -279,9 +290,11 @@ public class RulerView extends View {
 						- mid_point_between_fingers_down.x, mid_point_saved.y
 						+ mid_point_between_fingers.y
 						- mid_point_between_fingers_down.y);
+				//校准过程中不旋转尺子
 				if(!isCalibration)
 					angle_rotate = angle_saved + rotation(event) - angle_initial;
 				ruler_length = distance_saved * distance(event) / distance_initial;
+				//校准时，改变calibration和单位xmm
 				if(isCalibration) {
 					calibration = calibration_saved * distance(event) / distance_initial;
 					xmm = xmm_saved *  calibration;
