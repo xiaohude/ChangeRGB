@@ -22,6 +22,7 @@ public class MeasureActivity extends Activity {
 	private ImageView imageView;
 	private ShaderView shaderView;
 	private PathView pathView;
+	private  int pathView_id = 2;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +57,12 @@ public class MeasureActivity extends Activity {
 				relativeLayout.buildDrawingCache();
 				Bitmap bitmap = relativeLayout.getDrawingCache();
 				
+				
+				
 				pathView = new PathView(MeasureActivity.this, bitmap);
 				relativeLayout.addView(pathView);
+				pathView_id = relativeLayout.getChildCount()-1;
 				
-//				relativeLayout.destroyDrawingCache();
 				
 				return false;
 			}
@@ -89,6 +92,18 @@ public class MeasureActivity extends Activity {
 	    return filePath;
 	}
 	
+	
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		if(pathView != null) {
+			relativeLayout.removeViewAt(pathView_id);
+			relativeLayout.destroyDrawingCache();
+			pathView = null;
+		}
+		else
+			super.onBackPressed();
+	}
 	
 	//获取当前屏幕截图
 	public Bitmap getShot(Activity activity) {

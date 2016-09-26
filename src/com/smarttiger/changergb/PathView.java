@@ -18,7 +18,7 @@ import android.view.WindowManager;
 
 /**
  * 此方法是先截取要放大的区域，再进行放大，节约资源，不容易内存泄漏。
- * @author zhuxh2
+ * @author SmartTiger
  */
 public class PathView extends View {  
     private final Path mPath = new Path();  
@@ -32,24 +32,27 @@ public class PathView extends View {
     private static final int RADIUS_LITTLE = RADIUS / FACTOR;  
     // 大圆的圆心坐标
     private float mCenterX, mCenterY;  
+    //大小圆中心坐标距离。
+    private static final float DISTANCE = 2*(RADIUS + RADIUS_LITTLE);
     // 小圆的圆心坐标
     private float lCenterX, lCenterY;  
+    // 手柄坐标
+    private float startX, endX, startY, endY;
     
-    //大小圆中心坐标距离。
     
     private Paint paint;
     
 	// 屏幕宽和高
 	private int widths, heights;
-	private boolean isConfine = false;// 是否在左上边界处，用来置反放大镜方向。
+	private boolean isConfineTop = false;// 是否接近上边界处，用来置反放大镜方向。
+	private boolean isConfineLeft = false;// 是否接近左边界处，用来置反放大镜方向。
 
   
     public PathView(Context context, Bitmap bitmap) {  
-        super(context);  
+        super(context); 
         mPath.addCircle(RADIUS, RADIUS, RADIUS, Direction.CW);  
         matrix.setScale(FACTOR, FACTOR);  
   
-//        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.demo);  
         this.bitmap = bitmap;
         
         paint = new Paint();
@@ -63,24 +66,54 @@ public class PathView extends View {
 		widths = display.getWidth();
 		heights = display.getHeight();
 		
-		System.out.println("widths===="+widths+"--heights==="+heights);
-
+		//初始化放大镜在屏幕中间
+		lCenterX = widths / 2;
+		lCenterY = heights / 2;
+        mCenterX = (float) (lCenterX - DISTANCE/1.414);  
+        mCenterY = (float) (lCenterY - DISTANCE/1.414);
+        startX = (float) (lCenterX - RADIUS_LITTLE/1.414);
+        endX = (float) (mCenterX + RADIUS/1.414);
+        startY = (float) (lCenterY - RADIUS_LITTLE/1.414);
+        endY = (float) (mCenterY + RADIUS/1.414);
+		
     }  
   
     @Override  
     public boolean onTouchEvent(MotionEvent event) { 
     	lCenterX = event.getX();
     	lCenterY = event.getY();
-        mCenterX = (float) (lCenterX - RADIUS*1.5 - RADIUS_LITTLE/1.414);  
-        mCenterY = (float) (lCenterY - RADIUS*1.5 - RADIUS_LITTLE/1.414);
         
-//        if(lCenterX < RADIUS*1.5 + RADIUS_LITTLE/1.414 && lCenterY < RADIUS*1.5 + RADIUS_LITTLE/1.414) {
-//
-//            mCenterX = (float) (lCenterX + RADIUS*1.5 + RADIUS_LITTLE/1.414);  
-//            mCenterY = (float) (lCenterY + RADIUS*1.5 + RADIUS_LITTLE/1.414);
-//        }
-        	
-  
+    	//下面是两种置反放大镜逻辑，一种是左上优先，一种是碰边界再置反。
+//        isConfineLeft = lCenterX < DISTANCE/1.414+RADIUS;
+//        isConfineTop = lCenterY < DISTANCE/1.414+RADIUS;
+        if(lCenterX < DISTANCE/1.414+RADIUS)
+        	isConfineLeft = true;
+        if(lCenterY < DISTANCE/1.414+RADIUS)
+        	isConfineTop = true;
+        if(lCenterX > widths - (DISTANCE/1.414+RADIUS))
+        	isConfineLeft = false;
+        if(lCenterY > heights - (DISTANCE/1.414+RADIUS))
+        	isConfineTop = false;
+        
+        if(isConfineLeft) {
+            mCenterX = (float) (lCenterX + DISTANCE/1.414);
+            startX = (float) (lCenterX + RADIUS_LITTLE/1.414);
+            endX = (float) (mCenterX - RADIUS/1.414);
+        } else {
+            mCenterX = (float) (lCenterX - DISTANCE/1.414);
+            startX = (float) (lCenterX - RADIUS_LITTLE/1.414);
+            endX = (float) (mCenterX + RADIUS/1.414);
+        }
+        if(isConfineTop) {
+            mCenterY = (float) (lCenterY + DISTANCE/1.414);
+            startY = (float) (lCenterY + RADIUS_LITTLE/1.414);
+            endY = (float) (mCenterY - RADIUS/1.414);
+        } else {
+            mCenterY = (float) (lCenterY - DISTANCE/1.414);
+            startY = (float) (lCenterY - RADIUS_LITTLE/1.414);
+            endY = (float) (mCenterY + RADIUS/1.414);
+        }
+        
         invalidate();  
         return true;  
     }  
@@ -95,8 +128,7 @@ public class PathView extends View {
         //绘制放大镜圆形框
         canvas.drawCircle(mCenterX, mCenterY, RADIUS + 4, paint);
         //绘制放大镜手柄
-        canvas.drawLine((float)(mCenterX+RADIUS/1.414), (float)(mCenterY+RADIUS/1.414), 
-        				(float)(mCenterX+RADIUS*1.5), (float)(mCenterY+RADIUS*1.5), paint);
+        canvas.drawLine(startX, startY, endX, endY, paint);
         //绘制小圆
         canvas.drawCircle(lCenterX, lCenterY, RADIUS_LITTLE, paint);
         
@@ -104,8 +136,8 @@ public class PathView extends View {
         canvas.translate(mCenterX - RADIUS, mCenterY - RADIUS);  
         canvas.clipPath(mPath);  
         // 画放大后的图  
-        canvas.translate((float)(RADIUS - (mCenterX + RADIUS*1.5+RADIUS_LITTLE/1.414) * FACTOR), 
-        				 (float)(RADIUS - (mCenterY + RADIUS*1.5+RADIUS_LITTLE/1.414) * FACTOR));  
+        canvas.translate((float)(RADIUS - lCenterX * FACTOR), 
+        				 (float)(RADIUS - lCenterY * FACTOR));  
         canvas.drawBitmap(bitmap, matrix, null);  
 
     }  
