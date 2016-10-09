@@ -119,27 +119,41 @@ public class PathView extends View {
     }  
   
     //大小圆式放大镜
+//    @Override  
+//    public void onDraw(Canvas canvas) {  
+//        super.onDraw(canvas);  
+//        // 底图  
+//        canvas.drawBitmap(bitmap, 0, 0, null);  
+//        
+//        //绘制放大镜圆形框
+//        canvas.drawCircle(mCenterX, mCenterY, RADIUS + 4, paint);
+//        //绘制放大镜手柄
+//        canvas.drawLine(startX, startY, endX, endY, paint);
+//        //绘制小圆
+//        canvas.drawCircle(lCenterX, lCenterY, RADIUS_LITTLE, paint);
+//        
+//        // 剪切  
+//        canvas.translate(mCenterX - RADIUS, mCenterY - RADIUS);  
+//        canvas.clipPath(mPath);  
+//        // 画放大后的图  
+//        canvas.translate((float)(RADIUS - lCenterX * FACTOR), 
+//        				 (float)(RADIUS - lCenterY * FACTOR));  
+//        canvas.drawBitmap(bitmap, matrix, null);  
+//        
+//    }  
+    
+    //全屏式放大镜
     @Override  
     public void onDraw(Canvas canvas) {  
-        super.onDraw(canvas);  
-        // 底图  
-        canvas.drawBitmap(bitmap, 0, 0, null);  
-        
-        //绘制放大镜圆形框
-        canvas.drawCircle(mCenterX, mCenterY, RADIUS + 4, paint);
-        //绘制放大镜手柄
-        canvas.drawLine(startX, startY, endX, endY, paint);
-        //绘制小圆
-        canvas.drawCircle(lCenterX, lCenterY, RADIUS_LITTLE, paint);
-        
-        // 剪切  
-        canvas.translate(mCenterX - RADIUS, mCenterY - RADIUS);  
-        canvas.clipPath(mPath);  
-        // 画放大后的图  
-        canvas.translate((float)(RADIUS - lCenterX * FACTOR), 
-        				 (float)(RADIUS - lCenterY * FACTOR));  
-        canvas.drawBitmap(bitmap, matrix, null);  
-
+    	super.onDraw(canvas);  
+    	// 底图  
+    	canvas.drawBitmap(bitmap, 0, 0, null);  
+    	
+    	// 画放大后的图  
+    	canvas.translate((float)(widths/2 - (lCenterX)* FACTOR ), 
+    			(float)(heights/2 - (lCenterY)* FACTOR ));  
+    	canvas.drawBitmap(bitmap, matrix, null); 
+    	
     }  
     
     //手柄式放大镜
