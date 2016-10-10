@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.smarttiger.SweetAlert.widget.ShowDialogUtil;
+import com.smarttiger.changergb.PathView.OnGetRGBlistener;
 
 import android.app.Activity;
 import android.content.Context;
@@ -38,6 +39,7 @@ import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +50,9 @@ public class MainActivity extends Activity {
 	private EditText editOld;
 	private EditText editNew;
 	private Button button;
+	private RelativeLayout imageLayout;
+	private  int pathView_id = 0;
+	private PathView pathView;
 	private ImageView imageView;
 	private TextView textView;
 	
@@ -104,6 +109,7 @@ public class MainActivity extends Activity {
 				new ChangeBitmapRGB().execute(rgbOld, rgbNew);
 			}
 		});
+		imageLayout = (RelativeLayout) findViewById(R.id.image_layout);
 		imageView = (ImageView) findViewById(R.id.image_view);
 		imageView.setOnLongClickListener(new OnLongClickListener() {
 			@Override
@@ -116,7 +122,7 @@ public class MainActivity extends Activity {
 				return false;
 			}
 		});
-		imageView.setOnTouchListener(new OnGetColorTouchListener());
+//		imageView.setOnTouchListener(new OnGetColorTouchListener());
 		
 		
 		bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic);
@@ -143,6 +149,13 @@ public class MainActivity extends Activity {
 
 		imageView.buildDrawingCache();
 		imageBitmap = imageView.getDrawingCache();
+		
+		if(pathView_id == 0) {
+			pathView = new PathView(MainActivity.this, imageBitmap);
+			pathView.setOnGetRGBlistener(new OnGetRGBlistener());
+			imageLayout.addView(pathView);
+			pathView_id = imageLayout.getChildCount()-1;
+		}
 		
 		bitmapWidth = bitmap.getWidth();
 		bitmapHeight = bitmap.getHeight();
@@ -385,7 +398,29 @@ public class MainActivity extends Activity {
                 System.out.println("cancel");  
             }  
               
-			return isMoveTouch;
+			return false;
+		}
+		
+	}
+	
+	class OnGetRGBlistener implements com.smarttiger.changergb.PathView.OnGetRGBlistener {
+
+		@Override
+		public void getRGB(int color) {
+			// TODO Auto-generated method stub
+			String hexColor;
+			if(color == 0) {
+				hexColor = "ffffff";
+				editOld.setText(""+hexColor);
+				editOld.setBackgroundColor(color);
+				editOld.setTextColor(0xff202020);
+			}
+			else {
+				hexColor = Integer.toHexString(color + 0x01000000);
+				editOld.setText(""+hexColor);
+				editOld.setBackgroundColor(color);
+				editOld.setTextColor(getTextColorForBackgroud(color));
+			}
 		}
 		
 	}
@@ -449,4 +484,5 @@ public class MainActivity extends Activity {
     	intent.putExtra(PICTURE_PATH, picturePath);
     	startActivity(intent);
     }
+    
 }

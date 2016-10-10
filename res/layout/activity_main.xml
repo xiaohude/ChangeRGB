@@ -64,11 +64,17 @@
 		android:visibility="gone"
         />
     
-    <ImageView 
-        android:id="@+id/image_view"
+    <RelativeLayout 
+        android:id="@+id/image_layout"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_weight="1"
-        />
+        android:layout_weight="1">
+    
+	    <ImageView 
+	        android:id="@+id/image_view"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        />
+    </RelativeLayout>
 
 </LinearLayout>

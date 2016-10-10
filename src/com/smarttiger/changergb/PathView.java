@@ -21,6 +21,15 @@ import android.view.WindowManager;
  * @author SmartTiger
  */
 public class PathView extends View {  
+	
+	/**手柄式放大镜*/
+	public static final int HANDLE_MODE = 101;
+	/**大小圆式放大镜*/
+	public static final int CIRCLE_MODE = 102;
+	/**全屏式放大镜*/
+	public static final int SCREEN_MODE = 103;
+	private int mode = CIRCLE_MODE;
+	
     private final Path mPath = new Path();  
     private final Matrix matrix = new Matrix();  
     private final Bitmap bitmap;  
@@ -48,6 +57,8 @@ public class PathView extends View {
 	private boolean isConfineLeft = false;// 是否接近左边界处，用来置反放大镜方向。
 
   
+	private OnGetRGBlistener onGetRGBlistener;
+	
     public PathView(Context context, Bitmap bitmap) {  
         super(context); 
         mPath.addCircle(RADIUS, RADIUS, RADIUS, Direction.CW);  
@@ -82,6 +93,11 @@ public class PathView extends View {
     public boolean onTouchEvent(MotionEvent event) { 
     	lCenterX = event.getX();
     	lCenterY = event.getY();
+    	
+    	if(onGetRGBlistener != null) {
+	    	int color = bitmap.getPixel((int)lCenterX, (int)lCenterY);
+	    	onGetRGBlistener.getRGB(color);
+    	}
         
     	//下面是两种置反放大镜逻辑，一种是左上优先，一种是碰边界再置反。
 //        isConfineLeft = lCenterX < DISTANCE/1.414+RADIUS;
@@ -118,36 +134,68 @@ public class PathView extends View {
         return true;  
     }  
   
-    //大小圆式放大镜
-//    @Override  
-//    public void onDraw(Canvas canvas) {  
-//        super.onDraw(canvas);  
-//        // 底图  
-//        canvas.drawBitmap(bitmap, 0, 0, null);  
-//        
-//        //绘制放大镜圆形框
-//        canvas.drawCircle(mCenterX, mCenterY, RADIUS + 4, paint);
-//        //绘制放大镜手柄
-//        canvas.drawLine(startX, startY, endX, endY, paint);
-//        //绘制小圆
-//        canvas.drawCircle(lCenterX, lCenterY, RADIUS_LITTLE, paint);
-//        
-//        // 剪切  
-//        canvas.translate(mCenterX - RADIUS, mCenterY - RADIUS);  
-//        canvas.clipPath(mPath);  
-//        // 画放大后的图  
-//        canvas.translate((float)(RADIUS - lCenterX * FACTOR), 
-//        				 (float)(RADIUS - lCenterY * FACTOR));  
-//        canvas.drawBitmap(bitmap, matrix, null);  
-//        
-//    }  
     
-    //全屏式放大镜
     @Override  
     public void onDraw(Canvas canvas) {  
-    	super.onDraw(canvas);  
-    	// 底图  
-    	canvas.drawBitmap(bitmap, 0, 0, null);  
+        super.onDraw(canvas);  
+        // 底图  
+        canvas.drawBitmap(bitmap, 0, 0, null);  
+        
+        if(mode == CIRCLE_MODE)
+        	onCircleDraw(canvas);
+        else if(mode == SCREEN_MODE)
+        	onScreenDraw(canvas);
+        else if(mode == HANDLE_MODE)
+        	onHandleDraw(canvas);
+        
+    }  
+    
+	//大小圆式放大镜
+    public void onCircleDraw(Canvas canvas) {  
+    	
+    	//绘制放大镜圆形框
+    	canvas.drawCircle(mCenterX, mCenterY, RADIUS + 4, paint);
+    	//绘制放大镜手柄
+    	canvas.drawLine(startX, startY, endX, endY, paint);
+    	//绘制小圆
+    	canvas.drawCircle(lCenterX, lCenterY, RADIUS_LITTLE, paint);
+
+    	//画小圆准星
+        canvas.drawLine(lCenterX , lCenterY + 2,
+        				lCenterX , lCenterY + 8, paint);
+        canvas.drawLine(lCenterX + 2, lCenterY ,
+        				lCenterX + 8, lCenterY, paint);
+        canvas.drawLine(lCenterX , lCenterY - 2,
+        				lCenterX , lCenterY - 8, paint);
+        canvas.drawLine(lCenterX - 2, lCenterY,
+        				lCenterX - 8, lCenterY, paint);
+    	
+    	
+    	// 剪切  
+    	// 先平移画布到大圆的切方形左上角
+    	canvas.translate(mCenterX - RADIUS, mCenterY - RADIUS);  
+    	// 再剪切一个大圆形画布窟窿
+    	canvas.clipPath(mPath);  
+    	// 画放大后的图  
+    	// 再反向平移到合适的位置
+    	canvas.translate((float)(RADIUS - lCenterX * FACTOR), 
+    			(float)(RADIUS - lCenterY * FACTOR));  
+    	// 最后画放大后的bitmap
+    	canvas.drawBitmap(bitmap, matrix, null);  
+    	//画大圆准星
+        canvas.drawLine(lCenterX * FACTOR , lCenterY * FACTOR + 3,
+        				lCenterX * FACTOR , lCenterY * FACTOR + 20, paint);
+        canvas.drawLine(lCenterX * FACTOR + 3, lCenterY * FACTOR ,
+        				lCenterX * FACTOR + 20, lCenterY * FACTOR, paint);
+        canvas.drawLine(lCenterX * FACTOR , lCenterY * FACTOR - 3,
+        				lCenterX * FACTOR , lCenterY * FACTOR - 20, paint);
+        canvas.drawLine(lCenterX * FACTOR - 3, lCenterY * FACTOR ,
+        				lCenterX * FACTOR - 20, lCenterY * FACTOR, paint);
+    	
+    }  
+    
+    //全屏式放大镜
+    public void onScreenDraw(Canvas canvas) {  
     	
     	// 画放大后的图  
     	canvas.translate((float)(widths/2 - (lCenterX)* FACTOR ), 
@@ -157,39 +205,49 @@ public class PathView extends View {
     }  
     
     //手柄式放大镜
-//    @Override  
-//    public void onDraw(Canvas canvas) {  
-//        super.onDraw(canvas);  
-//        // 底图  
-//        canvas.drawBitmap(bitmap, 0, 0, null);  
-//    
-//        //绘制放大镜圆形框
-//        canvas.drawCircle(mCurrentX, mCurrentY, RADIUS + 4, paint);
-//        //绘制瞄准镜
-//        canvas.drawLine(mCurrentX, mCurrentY-RADIUS,
-//						mCurrentX, mCurrentY-RADIUS-20, paint);
-//        canvas.drawLine(mCurrentX, mCurrentY+RADIUS,
-//						mCurrentX, mCurrentY+RADIUS+20, paint);
-//        canvas.drawLine(mCurrentX-RADIUS, mCurrentY,
-//						mCurrentX-RADIUS-20, mCurrentY, paint);
-//        canvas.drawLine(mCurrentX+RADIUS, mCurrentY,
-//						mCurrentX+RADIUS+20, mCurrentY, paint);
-//        //绘制放大镜手柄
-//        canvas.drawLine((float)(mCurrentX+RADIUS/1.414), (float)(mCurrentY+RADIUS/1.414), 
-//        				(float)(mCurrentX+RADIUS*1.5), (float)(mCurrentY+RADIUS*1.5), paint);
-////        //绘制小圆
-////        canvas.drawCircle((float)(mCurrentX+RADIUS*1.5+RADIUS_LITTLE/1.414), 
-////        				(float)(mCurrentY+RADIUS*1.5+RADIUS_LITTLE/1.414), RADIUS_LITTLE, paint);
-//        
-//        // 剪切  
-//        canvas.translate(mCurrentX - RADIUS, mCurrentY - RADIUS);  
-//        canvas.clipPath(mPath);  
-//        // 画放大后的图  
-//        canvas.translate((float)(RADIUS - mCurrentX * FACTOR), 
-//        				 (float)(RADIUS - mCurrentY * FACTOR));  
-////        canvas.translate((float)(RADIUS - (mCurrentX + RADIUS*1.5+RADIUS_LITTLE/1.414) * FACTOR), 
-////        				 (float)(RADIUS - (mCurrentY + RADIUS*1.5+RADIUS_LITTLE/1.414) * FACTOR)); 
-//        canvas.drawBitmap(bitmap, matrix, null);  
-//
-//    } 
+    public void onHandleDraw(Canvas canvas) {  
+    
+        //绘制放大镜圆形框
+        canvas.drawCircle(mCenterX, mCenterY, RADIUS + 4, paint);
+        //绘制瞄准镜
+        canvas.drawLine(mCenterX, mCenterY-RADIUS,
+						mCenterX, mCenterY-RADIUS-20, paint);
+        canvas.drawLine(mCenterX, mCenterY+RADIUS,
+						mCenterX, mCenterY+RADIUS+20, paint);
+        canvas.drawLine(mCenterX-RADIUS, mCenterY,
+						mCenterX-RADIUS-20, mCenterY, paint);
+        canvas.drawLine(mCenterX+RADIUS, mCenterY,
+						mCenterX+RADIUS+20, mCenterY, paint);
+        //绘制放大镜手柄
+        canvas.drawLine((float)(mCenterX+RADIUS/1.414), (float)(mCenterY+RADIUS/1.414), 
+        				(float)(mCenterX+RADIUS*1.5), (float)(mCenterY+RADIUS*1.5), paint);
+        
+        // 剪切  
+        canvas.translate(mCenterX - RADIUS, mCenterY - RADIUS);  
+        canvas.clipPath(mPath);  
+        // 画放大后的图  
+        canvas.translate((float)(RADIUS - mCenterX * FACTOR), 
+        				 (float)(RADIUS - mCenterY * FACTOR));  
+        canvas.drawBitmap(bitmap, matrix, null);  
+
+    } 
+    
+    
+
+    public interface OnGetRGBlistener {
+    	void getRGB (int color);
+    }
+    
+    public void setOnGetRGBlistener (OnGetRGBlistener onGetRGBlistener) {
+    	this.onGetRGBlistener = onGetRGBlistener;
+    }
+    
+    /** 设置放大镜模式:
+     * @param CIRCLE_MODE 大小圆式放大镜,
+     * @param SCREEN_MODE 全屏式放大镜 ,
+     * @param HANDLE_MODE 手柄式放大镜
+     */
+    public void setMode(int mode) {
+    	this.mode = mode;
+    }
 }  
