@@ -111,23 +111,28 @@ public class MainActivity extends Activity {
 		});
 		imageLayout = (RelativeLayout) findViewById(R.id.image_layout);
 		imageView = (ImageView) findViewById(R.id.image_view);
-		imageView.setOnLongClickListener(new OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				// TODO Auto-generated method stub
-				if(!isMoveTouch) {
-					Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
-					saveBitmap(bitmap);
-				}
-				return false;
-			}
-		});
+		// 将长按图片保存功能转移到按钮上
+//		imageView.setOnLongClickListener(new OnLongClickListener() {
+//			@Override
+//			public boolean onLongClick(View v) {
+//				// TODO Auto-generated method stub
+//				if(!isMoveTouch) {
+//					Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+//					saveBitmap(bitmap);
+//				}
+//				return false;
+//			}
+//		});
 //		imageView.setOnTouchListener(new OnGetColorTouchListener());
 		
 		
-		bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic);
+		String picPath = getRecentlyPhotoPath(this);
+		if(picPath != null)
+			bitmap = BitmapFactory.decodeFile(picPath);
+		else
+			bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic);
 		
-		bitmap = getAlphaBitmap(bitmap, 0xff65bbd2);//0xffd59591,b8a59f
+//		bitmap = getAlphaBitmap(bitmap, 0xff65bbd2);//0xffd59591,b8a59f
 		imageView.setImageBitmap(bitmap);
 		
 //		bitmapNew = changeBitmapRGB(bitmap, 0, 0xffff0000);
@@ -191,7 +196,7 @@ public class MainActivity extends Activity {
         return false;
 	}
 	
-	//提取图像Alpha位图  并替换为mColor颜色
+	/** 提取图像所有Alpha位图  并全替换为mColor颜色 */
     public static Bitmap getAlphaBitmap(Bitmap mBitmap,int mColor) {  
 //      BitmapDrawable mBitmapDrawable = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.enemy_infantry_ninja);  
 //      Bitmap mBitmap = mBitmapDrawable.getBitmap();  
@@ -214,7 +219,7 @@ public class MainActivity extends Activity {
         return mAlphaBitmap;  
     } 
     
-    //将bitmap里颜色值为mColor的像素改为newColor
+    /** 将bitmap里颜色值为mColor的像素改为newColor */
     public static Bitmap changeBitmapRGB(Bitmap mBitmap,int mColor, int newColor) {  
 
     	int width = mBitmap.getWidth();
@@ -259,6 +264,11 @@ public class MainActivity extends Activity {
 		};
     }
     
+    // 保存替换颜色后的图片
+    public void onSavePic(View view) {
+		Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+		saveBitmap(bitmap);
+    }
     
     //记得加权限
     private void saveBitmap(Bitmap bm) {
@@ -338,7 +348,7 @@ public class MainActivity extends Activity {
 	private boolean isMoveTouch = false;
 	private float downX = 0;
 	private float downY = 0;
-	class OnGetColorTouchListener implements OnTouchListener {
+	private class OnGetColorTouchListener implements OnTouchListener {
 
 		@Override
 		public boolean onTouch(View view, MotionEvent event) {
@@ -354,12 +364,6 @@ public class MainActivity extends Activity {
 			by = (int) y;
 			if(bx < 0) bx = 0;
 			if(by < 0) by = 0;
-
-//			textView.setText("bitmapWidth="+ bitmapWidth +"bitmapHeight="+bitmapHeight+"\n");  
-//			textView.append("imageviewWidth="+ imageviewWidth +"imageviewHeight="+imageviewHeight+"\n"); 
-//			textView.append("x="+x+"y="+y+"\n");
-//			textView.append("bx="+bx+"by="+by+"\n");
-			
 			
 			int color = imageBitmap.getPixel(bx, by);
 			String hexColor;
@@ -484,5 +488,26 @@ public class MainActivity extends Activity {
     	intent.putExtra(PICTURE_PATH, picturePath);
     	startActivity(intent);
     }
+    
+    /** 获取最新照片，截屏的路径 */
+  	public static String getRecentlyPhotoPath(Context context) {
+  		//这个地方利用like 和通配符 来寻找 系统相机存储照片的地方
+  		//实际上还可以做的更夸张一点，寻找所有目录下的照片 并且可以限定格式  只要修改这个通配符语句即可
+//  		String searchPath = MediaStore.Files.FileColumns.DATA + " LIKE '%" + "/DCIM/Camera/" + "%' ";
+  		String searchPath = MediaStore.Files.FileColumns.DATA + " LIKE '%" + "/Screenshots/" + "%' ";
+  		Uri uri = MediaStore.Files.getContentUri("external");
+  		//这里做一个排序，因为我们实际上只需要最新拍得那张即可 你甚至可以取表里的 时间那个字段 然后判断一下 距离现在是否超过2分钟 超过2分钟就可以不显示缩略图的 
+  		//微信就是2分钟之内刚拍的图片会显示，超过了就不显示，这里主要就是看对表结构的理解 
+  		Cursor cursor = context.getContentResolver().query(
+  		uri, new String[]{MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE}, searchPath, null, MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
+  		String filePath = "";
+  	    if (cursor != null && cursor.moveToFirst()) {
+  	        filePath = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
+  	    }
+  	    if (!cursor.isClosed()) {
+  	        cursor.close();
+  	    }
+  	    return filePath;
+  	}
     
 }

@@ -35,7 +35,7 @@ public class MeasureActivity extends Activity {
 		
 		//如果路径为空，则默认使用最新截图
 		if(picPath == null) {
-			picPath = getRecentlyPhotoPath(this);
+			picPath = MainActivity.getRecentlyPhotoPath(this);
 		}
 		
 		relativeLayout = (RelativeLayout) findViewById(R.id.relative_layout);
@@ -60,7 +60,7 @@ public class MeasureActivity extends Activity {
 				
 				
 				pathView = new PathView(MeasureActivity.this, bitmap);
-				pathView.setMode(PathView.SCREEN_MODE);
+//				pathView.setMode(PathView.SCREEN_MODE);
 				relativeLayout.addView(pathView);
 				pathView_id = relativeLayout.getChildCount()-1;
 				
@@ -69,28 +69,6 @@ public class MeasureActivity extends Activity {
 			}
 		});
 		
-	}
-	
-	
-	//获取最新照片，截屏的路径
-	public static String getRecentlyPhotoPath(Context context) {
-		//这个地方利用like 和通配符 来寻找 系统相机存储照片的地方
-		//实际上还可以做的更夸张一点，寻找所有目录下的照片 并且可以限定格式  只要修改这个通配符语句即可
-//		String searchPath = MediaStore.Files.FileColumns.DATA + " LIKE '%" + "/DCIM/Camera/" + "%' ";
-		String searchPath = MediaStore.Files.FileColumns.DATA + " LIKE '%" + "/Screenshots/" + "%' ";
-		Uri uri = MediaStore.Files.getContentUri("external");
-		//这里做一个排序，因为我们实际上只需要最新拍得那张即可 你甚至可以取表里的 时间那个字段 然后判断一下 距离现在是否超过2分钟 超过2分钟就可以不显示缩略图的 
-		//微信就是2分钟之内刚拍的图片会显示，超过了就不显示，这里主要就是看对表结构的理解 
-		Cursor cursor = context.getContentResolver().query(
-		uri, new String[]{MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE}, searchPath, null, MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
-		String filePath = "";
-	    if (cursor != null && cursor.moveToFirst()) {
-	        filePath = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
-	    }
-	    if (!cursor.isClosed()) {
-	        cursor.close();
-	    }
-	    return filePath;
 	}
 	
 	

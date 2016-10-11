@@ -14,7 +14,6 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
-			android:text="65bbd2"
 			android:hint="旧颜色值(ff00ff)" />
 	    <TextView 
 			android:layout_width="wrap_content"
@@ -54,6 +53,13 @@
 	        android:layout_height="wrap_content"
 	        android:layout_weight="1"
 	        android:text="替换颜色" />
+	    
+	    <Button 
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:onClick="onSavePic"
+	        android:text="保存图片" />
     </LinearLayout>
     
     <TextView 

@@ -159,16 +159,17 @@ public class PathView extends View {
     	canvas.drawLine(startX, startY, endX, endY, paint);
     	//绘制小圆
     	canvas.drawCircle(lCenterX, lCenterY, RADIUS_LITTLE, paint);
-
     	//画小圆准星
-        canvas.drawLine(lCenterX , lCenterY + 2,
-        				lCenterX , lCenterY + 8, paint);
-        canvas.drawLine(lCenterX + 2, lCenterY ,
-        				lCenterX + 8, lCenterY, paint);
-        canvas.drawLine(lCenterX , lCenterY - 2,
-        				lCenterX , lCenterY - 8, paint);
-        canvas.drawLine(lCenterX - 2, lCenterY,
-        				lCenterX - 8, lCenterY, paint);
+    	if(onGetRGBlistener != null) {
+	        canvas.drawLine(lCenterX , lCenterY + 2,
+	        				lCenterX , lCenterY + 8, paint);
+	        canvas.drawLine(lCenterX + 2, lCenterY ,
+	        				lCenterX + 8, lCenterY, paint);
+	        canvas.drawLine(lCenterX , lCenterY - 2,
+	        				lCenterX , lCenterY - 8, paint);
+	        canvas.drawLine(lCenterX - 2, lCenterY,
+	        				lCenterX - 8, lCenterY, paint);
+    	}
     	
     	
     	// 剪切  
@@ -183,14 +184,16 @@ public class PathView extends View {
     	// 最后画放大后的bitmap
     	canvas.drawBitmap(bitmap, matrix, null);  
     	//画大圆准星
-        canvas.drawLine(lCenterX * FACTOR , lCenterY * FACTOR + 3,
-        				lCenterX * FACTOR , lCenterY * FACTOR + 20, paint);
-        canvas.drawLine(lCenterX * FACTOR + 3, lCenterY * FACTOR ,
-        				lCenterX * FACTOR + 20, lCenterY * FACTOR, paint);
-        canvas.drawLine(lCenterX * FACTOR , lCenterY * FACTOR - 3,
-        				lCenterX * FACTOR , lCenterY * FACTOR - 20, paint);
-        canvas.drawLine(lCenterX * FACTOR - 3, lCenterY * FACTOR ,
-        				lCenterX * FACTOR - 20, lCenterY * FACTOR, paint);
+    	if(onGetRGBlistener != null) {
+	        canvas.drawLine(lCenterX * FACTOR , lCenterY * FACTOR + 3,
+	        				lCenterX * FACTOR , lCenterY * FACTOR + 20, paint);
+	        canvas.drawLine(lCenterX * FACTOR + 3, lCenterY * FACTOR ,
+	        				lCenterX * FACTOR + 20, lCenterY * FACTOR, paint);
+	        canvas.drawLine(lCenterX * FACTOR , lCenterY * FACTOR - 3,
+	        				lCenterX * FACTOR , lCenterY * FACTOR - 20, paint);
+	        canvas.drawLine(lCenterX * FACTOR - 3, lCenterY * FACTOR ,
+	        				lCenterX * FACTOR - 20, lCenterY * FACTOR, paint);
+    	}
     	
     }  
     
