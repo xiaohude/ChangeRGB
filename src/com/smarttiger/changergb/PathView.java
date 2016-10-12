@@ -72,10 +72,9 @@ public class PathView extends View {
 		paint.setStrokeWidth(4);
 		
 		
-		// 获取屏幕宽和高
-		Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-		widths = display.getWidth();
-		heights = display.getHeight();
+		// 获取图片宽和高
+		widths = bitmap.getWidth();
+		heights = bitmap.getHeight();
 		
 		//初始化放大镜在屏幕中间
 		lCenterX = widths / 2;
@@ -93,6 +92,11 @@ public class PathView extends View {
     public boolean onTouchEvent(MotionEvent event) { 
     	lCenterX = event.getX();
     	lCenterY = event.getY();
+    	
+    	lCenterX = lCenterX < 0 ? 0 : lCenterX;
+    	lCenterX = lCenterX > widths ? widths : lCenterX;
+    	lCenterY = lCenterY < 0 ? 0 : lCenterY;
+    	lCenterY = lCenterY > heights ? heights : lCenterY;
     	
     	if(onGetRGBlistener != null) {
 	    	int color = bitmap.getPixel((int)lCenterX, (int)lCenterY);
@@ -222,8 +226,10 @@ public class PathView extends View {
         canvas.drawLine(mCenterX+RADIUS, mCenterY,
 						mCenterX+RADIUS+20, mCenterY, paint);
         //绘制放大镜手柄
-        canvas.drawLine((float)(mCenterX+RADIUS/1.414), (float)(mCenterY+RADIUS/1.414), 
-        				(float)(mCenterX+RADIUS*1.5), (float)(mCenterY+RADIUS*1.5), paint);
+        paint.setStrokeWidth(10);
+    	canvas.drawLine(startX, startY, endX, endY, paint);
+        paint.setStrokeWidth(4);
+        canvas.drawRect(startX, startY, endX, endY, paint);
         
         // 剪切  
         canvas.translate(mCenterX - RADIUS, mCenterY - RADIUS);  

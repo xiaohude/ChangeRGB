@@ -61,6 +61,7 @@ public class MeasureActivity extends Activity {
 				
 				pathView = new PathView(MeasureActivity.this, bitmap);
 //				pathView.setMode(PathView.SCREEN_MODE);
+				pathView.setMode(PathView.HANDLE_MODE);
 				relativeLayout.addView(pathView);
 				pathView_id = relativeLayout.getChildCount()-1;
 				
