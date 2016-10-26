@@ -500,7 +500,7 @@ public class MainActivity extends Activity {
   		//微信就是2分钟之内刚拍的图片会显示，超过了就不显示，这里主要就是看对表结构的理解 
   		Cursor cursor = context.getContentResolver().query(
   		uri, new String[]{MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE}, searchPath, null, MediaStore.Files.FileColumns.DATE_ADDED + " DESC");
-  		String filePath = "";
+  		String filePath = null;
   	    if (cursor != null && cursor.moveToFirst()) {
   	        filePath = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
   	    }
