@@ -208,6 +208,8 @@ public class PathView extends View {
     	canvas.translate((float)(widths/2 - (lCenterX)* FACTOR ), 
     			(float)(heights/2 - (lCenterY)* FACTOR ));  
     	canvas.drawBitmap(bitmap, matrix, null); 
+    	// 画个外边框
+    	canvas.drawRect(0, 0, widths * FACTOR, heights * FACTOR, paint);
     	
     }  
     
