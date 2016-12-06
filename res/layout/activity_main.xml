@@ -38,28 +38,35 @@
 	        android:layout_height="wrap_content"
 	        android:layout_weight="1"
 	        android:onClick="onGetPic"
-	        android:text="选取图片" />
+	        android:text="选取\n图片" />
 	    
 	    <Button 
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
 	        android:layout_weight="1"
 	        android:onClick="onMeasure"
-	        android:text="测量截图" />
+	        android:text="测量\n截图" />
+	    
+	    <Button 
+	        android:id="@+id/bw_button"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:text="黑白\n显边" />
 	    
 	    <Button 
 	        android:id="@+id/test_button"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
 	        android:layout_weight="1"
-	        android:text="替换颜色" />
+	        android:text="替换\n颜色" />
 	    
 	    <Button 
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
 	        android:layout_weight="1"
 	        android:onClick="onSavePic"
-	        android:text="保存图片" />
+	        android:text="保存\n图片" />
     </LinearLayout>
     
     <TextView 

@@ -50,6 +50,7 @@ public class MainActivity extends Activity {
 	private EditText editOld;
 	private EditText editNew;
 	private Button button;
+	private Button bwButton;
 	private RelativeLayout imageLayout;
 	private  int pathView_id = 0;
 	private PathView pathView;
@@ -74,6 +75,7 @@ public class MainActivity extends Activity {
 		editNew.addTextChangedListener(new colorTextWatcher());
 		textView = (TextView) findViewById(R.id.text_view);
 		button = (Button) findViewById(R.id.test_button);
+		bwButton = (Button) findViewById(R.id.bw_button);
 		button.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -109,6 +111,34 @@ public class MainActivity extends Activity {
 				new ChangeBitmapRGB().execute(rgbOld, rgbNew);
 			}
 		});
+		bwButton.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+
+				String colorOld = editOld.getText().toString();
+				String colorNew = editNew.getText().toString();
+				
+				if(TextUtils.isEmpty(colorNew)) {
+					colorNew = "000000";
+				} else if(!isColorString(colorNew)){
+					Toast toast = Toast.makeText(context, "格式错误！(f0f0f0)", 0);
+					toast.setGravity(Gravity.CENTER, 0, -400);
+					toast.show();
+					return;
+				}
+				
+				if(!TextUtils.isEmpty(colorOld))
+					cs = Integer.valueOf(colorOld, 16);
+				if(cs < 0 || cs > 255)
+					cs = 0x06;
+				int rgbNew = HexStringToInt(colorNew);
+				
+				ShowDialogUtil.showRainbowProgress(context, "处理中");
+				new BlackWriteBitmap().execute(rgbNew);
+			}
+		});
 		imageLayout = (RelativeLayout) findViewById(R.id.image_layout);
 		imageView = (ImageView) findViewById(R.id.image_view);
 		// 将长按图片保存功能转移到按钮上
@@ -126,10 +156,10 @@ public class MainActivity extends Activity {
 //		imageView.setOnTouchListener(new OnGetColorTouchListener());
 		
 		
-		String picPath = getRecentlyPhotoPath(this);
-		if(picPath != null)
-			bitmap = BitmapFactory.decodeFile(picPath);
-		else
+//		String picPath = getRecentlyPhotoPath(this);
+//		if(picPath != null)
+//			bitmap = BitmapFactory.decodeFile(picPath);
+//		else
 			bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic);
 		
 //		bitmap = getAlphaBitmap(bitmap, 0xff65bbd2);//0xffd59591,b8a59f
@@ -220,10 +250,12 @@ public class MainActivity extends Activity {
     } 
     
     /** 将bitmap里颜色值为mColor的像素改为newColor */
-    public static Bitmap changeBitmapRGB(Bitmap mBitmap,int mColor, int newColor) {  
+    public Bitmap changeBitmapRGB(Bitmap mBitmap,int mColor, int newColor) {  
 
     	int width = mBitmap.getWidth();
     	int height = mBitmap.getHeight();
+    	
+    	cache = new boolean[width][height];
     	
 //    	Bitmap newBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);  
     	Bitmap newBitmap = mBitmap.copy(Config.ARGB_8888, true);
@@ -237,6 +269,19 @@ public class MainActivity extends Activity {
 //					newBitmap.setPixel(x, y, color);
 			}
 		}
+    	
+    	
+    	//初始测试黑白显边的调试代码
+//    	for (int x = 1; x < width-1; x++) {
+//    		for (int y = 1; y < height-1; y++) {
+//    			cache[x][y] = isSimilarArea(mBitmap, x, y);
+//        		if(cache[x][y])
+//        			newColor = 0xffffffff;
+//        		else
+//        			newColor = 0xff000000;
+//        		newBitmap.setPixel(x, y, newColor);
+//    		}
+//    	}
           
         return newBitmap;  
     } 
@@ -509,5 +554,99 @@ public class MainActivity extends Activity {
   	    }
   	    return filePath;
   	}
+  	
+  	
+  	
+  	//黑白显边线程
+  	class BlackWriteBitmap extends AsyncTask<Integer, Integer, Bitmap>{
+
+		@Override
+		protected Bitmap doInBackground(Integer... params) {
+			// TODO Auto-generated method stub
+			
+			int width = bitmap.getWidth();
+	    	int height = bitmap.getHeight();
+	    	int newColor = params[0];
+	    	int color = 0;
+	    	
+	    	cache = new boolean[width][height];
+	    	
+	    	Bitmap newBitmap = bitmap.copy(Config.ARGB_8888, true);
+	    	
+	    	for (int x = 1; x < width-1; x++) {
+	    		for (int y = 1; y < height-1; y++) {
+	    			cache[x][y] = isSimilarArea(bitmap, x, y);
+	        		if(cache[x][y])
+	        			color = 0xffffffff;
+	        		else
+	        			color = newColor;
+	        		newBitmap.setPixel(x, y, color);
+	    		}
+	    	}
+	          
+	        return newBitmap;  
+		}
+    	
+		protected void onPostExecute(Bitmap result) {
+			
+			imageView.setImageBitmap(result);
+			
+			bitmap = result;
+			imageView.buildDrawingCache();
+			imageBitmap = imageView.getDrawingCache();
+			editOld.setBackgroundColor(0xffffffff);
+			
+			ShowDialogUtil.closeRainbowProgress();
+		};
+    }
     
+  	//用来缓存当前坐标是否在相似区
+  	private boolean cache[][];
+  	
+  	//判断是否与周边颜色相似 九宫格比较
+  	private boolean isSimilarArea(Bitmap mBitmap, int x, int y){
+
+		int color1 = mBitmap.getPixel(x-1, y-1);
+		int color2 = mBitmap.getPixel(x,   y-1);
+		int color3 = mBitmap.getPixel(x+1, y-1);
+		int color4 = mBitmap.getPixel(x-1, y);
+		int color5 = mBitmap.getPixel(x,   y);
+		int color6 = mBitmap.getPixel(x+1, y);
+		int color7 = mBitmap.getPixel(x-1, y+1);
+		int color8 = mBitmap.getPixel(x,   y+1);
+		int color9 = mBitmap.getPixel(x+1, y+1);
+//		cache[x][y] = isSameRGB(color0, color1);
+		
+		if( isSameRGB(color5, color1) && 
+			isSameRGB(color5, color2) && 
+			isSameRGB(color5, color3) && 
+			isSameRGB(color5, color4) && 
+			isSameRGB(color5, color6) && 
+			isSameRGB(color5, color7) && 
+			isSameRGB(color5, color8) && 
+			isSameRGB(color5, color9) )
+			return true;
+		else
+			return false;
+  	}
+  	
+  	//颜色相似的阀值
+  	private int cs = 0x06;
+  	//判断两种颜色是否相同
+  	private boolean isSameRGB (int color0, int color1) {
+  		int red0 = (color0 & 0xff0000) >> 16;  
+        int green0 = (color0 & 0x00ff00) >> 8;  
+        int blue0 = (color0 & 0x0000ff);  
+  		
+        int red1 = (color1 & 0xff0000) >> 16;  
+        int green1 = (color1 & 0x00ff00) >> 8;  
+        int blue1 = (color1 & 0x0000ff);  
+        
+        if(Math.abs(red0-red1) < cs && Math.abs(green0-green1) < cs && Math.abs(blue0-blue1) < cs)
+        	return true;
+        else
+        	return false;
+  	}
+  	
+  	
 }
