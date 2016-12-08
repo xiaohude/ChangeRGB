@@ -255,7 +255,7 @@ public class MainActivity extends Activity {
     	int width = mBitmap.getWidth();
     	int height = mBitmap.getHeight();
     	
-    	cache = new boolean[width][height];
+    	cache = new int[width][height];
     	
 //    	Bitmap newBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);  
     	Bitmap newBitmap = mBitmap.copy(Config.ARGB_8888, true);
@@ -569,18 +569,81 @@ public class MainActivity extends Activity {
 	    	int newColor = params[0];
 	    	int color = 0;
 	    	
-	    	cache = new boolean[width][height];
+	    	cache = new int[width][height];
 	    	
-	    	Bitmap newBitmap = bitmap.copy(Config.ARGB_8888, true);
+//	    	Bitmap newBitmap = bitmap.copy(Config.ARGB_8888, true);
+	    	Bitmap newBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
 	    	
 	    	for (int x = 1; x < width-1; x++) {
 	    		for (int y = 1; y < height-1; y++) {
 	    			cache[x][y] = isSimilarArea(bitmap, x, y);
-	        		if(cache[x][y])
-	        			color = 0xffffffff;
-	        		else
-	        			color = newColor;
-	        		newBitmap.setPixel(x, y, color);
+//	        		if(cache[x][y] == 1) {
+//	        			color = newColor;
+//		        		newBitmap.setPixel(x, y, color);
+//	        		}
+////	        		else {
+////	        			color = 0xffffffff;
+////	        			newBitmap.setPixel(x, y, color);
+////	        		}
+	    		}
+	    	}
+	    	
+	    	//清理边界
+//	    	for (int x = 2; x < width-2; x++) {
+//		    	cache[x][0] = 0;
+//		    	cache[x][1] = 0;
+//		    	cache[x][height-1] = 0;
+//		    	cache[x][height-2] = 0;
+//	    	}
+//	    	for (int y = 2; y < height-2; y++) {
+//	    		cache[0][y] = 0;
+//	    		cache[1][y] = 0;
+//	    		cache[width-1][y] = 0;
+//	    		cache[width-2][y] = 0;
+//	    	}
+	    	
+	    	//划分连通区
+	    	for (int x = 2; x < width-2; x++) {
+	    		for (int y = 2; y < height-2; y++) {
+	    			if(cache[x][y] == 1){
+	    				connectedId ++;
+	    				counter = 0;
+	    				
+	    				dealBwlabe(x, y);
+	    				
+	    				if(counter > limit)
+		    				cache[x][y] = connectedId;
+	    			}
+	    		}
+	    	}
+	    	
+	    	for (int x = 2; x < width-2; x++) {
+	    		for (int y = 2; y < height-2; y++) {
+	    			if(cache[x][y] == 0)
+	    				continue;
+	    			switch (cache[x][y]%7+2) {
+						case 2:
+			        		newBitmap.setPixel(x, y, 0xff00ff00);
+							break;
+						case 3:
+		    				newBitmap.setPixel(x, y, 0xffffff00);
+		    				break;
+						case 4:
+		    				newBitmap.setPixel(x, y, 0xff00ffff);
+		    				break;
+						case 5:
+		    				newBitmap.setPixel(x, y, 0xffff0000);
+		    				break;
+						case 6:
+		    				newBitmap.setPixel(x, y, 0xffff00ff);
+		    				break;
+						case 7:
+		    				newBitmap.setPixel(x, y, 0xff0000ff);
+		    				break;
+						case 8:
+		    				newBitmap.setPixel(x, y, 0xff000000);
+		    				break;
+					}
 	    		}
 	    	}
 	          
@@ -595,16 +658,19 @@ public class MainActivity extends Activity {
 			imageView.buildDrawingCache();
 			imageBitmap = imageView.getDrawingCache();
 			editOld.setBackgroundColor(0xffffffff);
+			editNew.setText(""+connectedId);
 			
 			ShowDialogUtil.closeRainbowProgress();
 		};
     }
     
-  	//用来缓存当前坐标是否在相似区
-  	private boolean cache[][];
+  	//用来缓存当前坐标是否在相似区   用来遍历和记录连通区
+  	private int cache[][];
+  	//用来标记当前是哪个连通区
+  	private int connectedId = 1;
   	
-  	//判断是否与周边颜色相似 九宫格比较
-  	private boolean isSimilarArea(Bitmap mBitmap, int x, int y){
+  	//判断是否与周边颜色相似 九宫格比较 (八连通)
+  	private int isSimilarArea(Bitmap mBitmap, int x, int y){
 
 		int color1 = mBitmap.getPixel(x-1, y-1);
 		int color2 = mBitmap.getPixel(x,   y-1);
@@ -625,13 +691,13 @@ public class MainActivity extends Activity {
 			isSameRGB(color5, color7) && 
 			isSameRGB(color5, color8) && 
 			isSameRGB(color5, color9) )
-			return true;
+			return 0;
 		else
-			return false;
+			return 1;
   	}
   	
   	//颜色相似的阀值
-  	private int cs = 0x06;
+  	private int cs = 0x10;
   	//判断两种颜色是否相同
   	private boolean isSameRGB (int color0, int color1) {
   		int red0 = (color0 & 0xff0000) >> 16;  
@@ -648,5 +714,60 @@ public class MainActivity extends Activity {
         	return false;
   	}
   	
+  	//得限制连通的点数大于一个值才能算是连通区。
+  	//也就是累计连通点数大于这个值时，才开始着色，这样会隐藏掉小于这个值的连通点
+  	private int limit = 50;
+  	private int counter = 0;
+  	//递归处理黑白显边的数组，找出多个连通区。
+	private void dealBwlabe(int i, int j) {
+	    // TODO Auto-generated method stub
+		//上
+		if (cache[i-1][j] == 1) {
+//			if(counter++ > limit);
+				cache[i-1][j] = connectedId;
+		    dealBwlabe(i-1, j);
+		}
+		//左
+		if (cache[i][j-1] == 1) {
+//			if(counter++ > limit);
+				cache[i][j-1] = connectedId;
+		    dealBwlabe(i, j-1);
+		}
+		//下
+		if (cache[i+1][j] == 1) {
+//			if(counter++ > limit);
+				cache[i+1][j] = connectedId;
+		    dealBwlabe(i+1, j);
+		}
+		//右
+		if (cache[i][j+1] == 1) {
+//			if(counter++ > limit);
+				cache[i][j+1] = connectedId;
+		    dealBwlabe(i, j+1);
+		}
+
+////八连通需要
+//       //上左
+//       if (cache[i-1][j-1] == 1) {
+//           cache[i-1][j-1] = counter;
+//           dealBwlabe(i-1, j-1);
+//       }
+//       //上右
+//       if (cache[i-1][j+1] == 1) {
+//           cache[i-1][j+1] = counter;
+//           dealBwlabe(i-1, j+1);
+//       }
+//       //下左
+//       if (cache[i+1][j-1] == 1) {
+//           cache[i+1][j-1] = counter;
+//           dealBwlabe(i+1, j-1);
+//       }
+//       //下右
+//       if (cache[i+1][j+1] == 1) {
+//           cache[i+1][j+1] = counter;
+//           dealBwlabe(i+1, j+1);
+//       }       
+
+    }
   	
 }
