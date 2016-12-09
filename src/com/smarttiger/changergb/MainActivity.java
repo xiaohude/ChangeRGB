@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -606,20 +608,23 @@ public class MainActivity extends Activity {
 	    	for (int x = 2; x < width-2; x++) {
 	    		for (int y = 2; y < height-2; y++) {
 	    			if(cache[x][y] == 1){
-	    				connectedId ++;
 	    				counter = 0;
-	    				
 	    				dealBwlabe(x, y);
 	    				
-	    				if(counter > limit)
+	    				if(counter > limit) {
 		    				cache[x][y] = connectedId;
+		    				connectedId ++;
+	    				}
 	    			}
 	    		}
 	    	}
 	    	
+	    	
+	    	//进行着色
 	    	for (int x = 2; x < width-2; x++) {
 	    		for (int y = 2; y < height-2; y++) {
-	    			if(cache[x][y] == 0)
+//	    			System.out.print(""+cache[x][y]);
+	    			if(cache[x][y] == 0 || cache[x][y] == 1)
 	    				continue;
 	    			switch (cache[x][y]%7+2) {
 						case 2:
@@ -645,6 +650,7 @@ public class MainActivity extends Activity {
 		    				break;
 					}
 	    		}
+//	    		System.out.println("");
 	    	}
 	          
 	        return newBitmap;  
@@ -667,7 +673,7 @@ public class MainActivity extends Activity {
   	//用来缓存当前坐标是否在相似区   用来遍历和记录连通区
   	private int cache[][];
   	//用来标记当前是哪个连通区
-  	private int connectedId = 1;
+  	private int connectedId = 2;
   	
   	//判断是否与周边颜色相似 九宫格比较 (八连通)
   	private int isSimilarArea(Bitmap mBitmap, int x, int y){
@@ -715,34 +721,41 @@ public class MainActivity extends Activity {
   	}
   	
   	//得限制连通的点数大于一个值才能算是连通区。
-  	//也就是累计连通点数大于这个值时，才开始着色，这样会隐藏掉小于这个值的连通点
-  	private int limit = 50;
+  	//也就是累计连通点数大于这个值时，才开始着色，这样会隐藏掉小于这个值的连通点，
+  	//但是也会导致大于这个值的连通区缺少前面一部分点。
+  	private int limit = 1000;
   	private int counter = 0;
   	//递归处理黑白显边的数组，找出多个连通区。
 	private void dealBwlabe(int i, int j) {
 	    // TODO Auto-generated method stub
+
+		//由于使用if语句会导致栈溢出的崩溃问题，所以将判断逻辑用数学算法写进赋值里。
+//		if(counter++ > limit)
+		
+			cache[i][j] = (counter++ - limit)%2 * connectedId;
+			
 		//上
 		if (cache[i-1][j] == 1) {
-//			if(counter++ > limit);
-				cache[i-1][j] = connectedId;
+//			if(counter++ > limit)
+//				cache[i-1][j] = connectedId;
 		    dealBwlabe(i-1, j);
 		}
 		//左
 		if (cache[i][j-1] == 1) {
-//			if(counter++ > limit);
-				cache[i][j-1] = connectedId;
+//			if(counter++ > limit)
+//				cache[i][j-1] = connectedId;
 		    dealBwlabe(i, j-1);
 		}
 		//下
 		if (cache[i+1][j] == 1) {
-//			if(counter++ > limit);
-				cache[i+1][j] = connectedId;
+//			if(counter++ > limit)
+//				cache[i+1][j] = connectedId;
 		    dealBwlabe(i+1, j);
 		}
 		//右
 		if (cache[i][j+1] == 1) {
-//			if(counter++ > limit);
-				cache[i][j+1] = connectedId;
+//			if(counter++ > limit)
+//				cache[i][j+1] = connectedId;
 		    dealBwlabe(i, j+1);
 		}
 
@@ -769,5 +782,6 @@ public class MainActivity extends Activity {
 //       }       
 
     }
+	
   	
 }
