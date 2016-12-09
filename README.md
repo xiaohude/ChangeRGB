@@ -22,12 +22,12 @@
 先处理出轮廓边界黑白图片，再通过连通区递归算法过滤显示连通点大于limit的连通区标不同颜色显示出来</br>
 
 ## 截图：
-图片取色功能：
+###图片取色功能：
 <img width="360" height="640" src="./ScreenShots/main.png"/>
 
-测量截图功能：
+###测量截图功能：
 <img width="360" height="640" src="./ScreenShots/measure.png"/>
 
-黑白显边功能：
+###黑白显边功能：
 <img width="270" height="480" src="./ScreenShots/BlackWhite0.png"/><img width="270" height="480" src="./ScreenShots/BlackWhite1.png"/>
 <img width="270" height="480" src="./ScreenShots/BlackWhite2.png"/>

@@ -609,49 +609,88 @@ public class MainActivity extends Activity {
 	    		for (int y = 2; y < height-2; y++) {
 	    			if(cache[x][y] == 1){
 	    				counter = 0;
+	    				connectedId ++;
+	    				cache[x][y] = connectedId;
+	    				
+	    				connectedArea = new ConnectedArea();
+	    				connectedArea.connectedId = connectedId;
+	    				connectedArea.xList = new ArrayList<Integer>();
+	    				connectedArea.yList = new ArrayList<Integer>();
+	    				
 	    				dealBwlabe(x, y);
 	    				
-	    				if(counter > limit) {
-		    				cache[x][y] = connectedId;
-		    				connectedId ++;
-	    				}
+	    				connectedArea.length = counter;
+	    				connectedAreaList.add(connectedArea);
 	    			}
 	    		}
 	    	}
 	    	
+	    	//进行着色
+	    	for (ConnectedArea area : connectedAreaList) {
+	    		if(area.length > limit){
+	    			for(int i = 0;i < area.length; i++) {
+	    				int x = area.xList.get(i);
+	    				int y = area.yList.get(i);
+	    				
+	    				switch (area.connectedId%7 + 2) {
+							case 2:
+				        		newBitmap.setPixel(x, y, 0xff00ff00);
+								break;
+							case 3:
+			    				newBitmap.setPixel(x, y, 0xffffff00);
+			    				break;
+							case 4:
+			    				newBitmap.setPixel(x, y, 0xff00ffff);
+			    				break;
+							case 5:
+			    				newBitmap.setPixel(x, y, 0xffff0000);
+			    				break;
+							case 6:
+			    				newBitmap.setPixel(x, y, 0xffff00ff);
+			    				break;
+							case 7:
+			    				newBitmap.setPixel(x, y, 0xff0000ff);
+			    				break;
+							case 8:
+			    				newBitmap.setPixel(x, y, 0xff000000);
+			    				break;
+						}
+	    			}
+	    		}
+			}
 	    	
 	    	//进行着色
-	    	for (int x = 2; x < width-2; x++) {
-	    		for (int y = 2; y < height-2; y++) {
-//	    			System.out.print(""+cache[x][y]);
-	    			if(cache[x][y] == 0 || cache[x][y] == 1)
-	    				continue;
-	    			switch (cache[x][y]%7+2) {
-						case 2:
-			        		newBitmap.setPixel(x, y, 0xff00ff00);
-							break;
-						case 3:
-		    				newBitmap.setPixel(x, y, 0xffffff00);
-		    				break;
-						case 4:
-		    				newBitmap.setPixel(x, y, 0xff00ffff);
-		    				break;
-						case 5:
-		    				newBitmap.setPixel(x, y, 0xffff0000);
-		    				break;
-						case 6:
-		    				newBitmap.setPixel(x, y, 0xffff00ff);
-		    				break;
-						case 7:
-		    				newBitmap.setPixel(x, y, 0xff0000ff);
-		    				break;
-						case 8:
-		    				newBitmap.setPixel(x, y, 0xff000000);
-		    				break;
-					}
-	    		}
-//	    		System.out.println("");
-	    	}
+//	    	for (int x = 2; x < width-2; x++) {
+//	    		for (int y = 2; y < height-2; y++) {
+////	    			System.out.print(""+cache[x][y]);
+//	    			if(cache[x][y] == 0 || cache[x][y] == 1)
+//	    				continue;
+//	    			switch (cache[x][y]%7+2) {
+//						case 2:
+//			        		newBitmap.setPixel(x, y, 0xff00ff00);
+//							break;
+//						case 3:
+//		    				newBitmap.setPixel(x, y, 0xffffff00);
+//		    				break;
+//						case 4:
+//		    				newBitmap.setPixel(x, y, 0xff00ffff);
+//		    				break;
+//						case 5:
+//		    				newBitmap.setPixel(x, y, 0xffff0000);
+//		    				break;
+//						case 6:
+//		    				newBitmap.setPixel(x, y, 0xffff00ff);
+//		    				break;
+//						case 7:
+//		    				newBitmap.setPixel(x, y, 0xff0000ff);
+//		    				break;
+//						case 8:
+//		    				newBitmap.setPixel(x, y, 0xff000000);
+//		    				break;
+//					}
+//	    		}
+////	    		System.out.println("");
+//	    	}
 	          
 	        return newBitmap;  
 		}
@@ -673,7 +712,7 @@ public class MainActivity extends Activity {
   	//用来缓存当前坐标是否在相似区   用来遍历和记录连通区
   	private int cache[][];
   	//用来标记当前是哪个连通区
-  	private int connectedId = 2;
+  	private int connectedId = 1;
   	
   	//判断是否与周边颜色相似 九宫格比较 (八连通)
   	private int isSimilarArea(Bitmap mBitmap, int x, int y){
@@ -732,8 +771,13 @@ public class MainActivity extends Activity {
 		//由于使用if语句会导致栈溢出的崩溃问题，所以将判断逻辑用数学算法写进赋值里。
 //		if(counter++ > limit)
 		
-			cache[i][j] = (counter++ - limit)%2 * connectedId;
-			
+//			cache[i][j] = (counter++ - limit)%2 * connectedId;
+		
+		counter++;
+		cache[i][j] = connectedId;
+		connectedArea.xList.add(i);
+		connectedArea.yList.add(j);
+		
 		//上
 		if (cache[i-1][j] == 1) {
 //			if(counter++ > limit)
@@ -783,5 +827,15 @@ public class MainActivity extends Activity {
 
     }
 	
+	
+	private ArrayList<ConnectedArea> connectedAreaList = new ArrayList<ConnectedArea>();
+	private ConnectedArea connectedArea;
+	//单个连通区类
+	class ConnectedArea {
+		int connectedId = 0;
+		ArrayList<Integer> xList;
+		ArrayList<Integer> yList;
+		int length = 0;
+	}
   	
 }
