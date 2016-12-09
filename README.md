@@ -19,13 +19,15 @@
 采用8-领域连通区域分析法，和阀值判断RGB相似度，黑白化图片，凸显出边框。</br>
 旧颜色值输入框可以输入颜色判断的阀值</br>
 新颜色值输入框会显示最后分析出的连通区一共有多少个</br>
+先处理出轮廓边界黑白图片，再通过连通区递归算法过滤显示连通点大于limit的连通区标不同颜色显示出来</br>
 
 ## 截图：
 图片取色功能：
-![图片取色](./ScreenShots/main.png)
+<img width="360" height="640" src="./ScreenShots/main.png"/>
 
 测量截图功能：
-![截图测量](./ScreenShots/measure.png)
+<img width="360" height="640" src="./ScreenShots/measure.png"/>
 
 黑白显边功能：
-![黑白显边](./ScreenShots/BlackWhite.png)
+<img width="270" height="480" src="./ScreenShots/BlackWhite0.png"/><img width="270" height="480" src="./ScreenShots/BlackWhite1.png"/>
+<img width="270" height="480" src="./ScreenShots/BlackWhite2.png"/>
