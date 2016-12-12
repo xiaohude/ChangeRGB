@@ -45,7 +45,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnLongClickListener{
 	private  String HEAD_DIR = Environment.getExternalStorageDirectory().getAbsolutePath()+ "/ChangeRGB/";
 	
 	private Context context;
@@ -141,6 +141,7 @@ public class MainActivity extends Activity {
 				new BlackWriteBitmap().execute(rgbNew);
 			}
 		});
+		bwButton.setOnLongClickListener(this);
 		imageLayout = (RelativeLayout) findViewById(R.id.image_layout);
 		imageView = (ImageView) findViewById(R.id.image_view);
 		// 将长按图片保存功能转移到按钮上
@@ -158,10 +159,10 @@ public class MainActivity extends Activity {
 //		imageView.setOnTouchListener(new OnGetColorTouchListener());
 		
 		
-//		String picPath = getRecentlyPhotoPath(this);
-//		if(picPath != null)
-//			bitmap = BitmapFactory.decodeFile(picPath);
-//		else
+		String picPath = getRecentlyPhotoPath(this);
+		if(picPath != null)
+			bitmap = BitmapFactory.decodeFile(picPath);
+		else
 			bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pic);
 		
 //		bitmap = getAlphaBitmap(bitmap, 0xff65bbd2);//0xffd59591,b8a59f
@@ -197,6 +198,21 @@ public class MainActivity extends Activity {
 		bitmapWidth = bitmap.getWidth();
 		bitmapHeight = bitmap.getHeight();
 	}
+	
+	
+
+
+	@Override
+	public boolean onLongClick(View v) {
+		// TODO 用于长按按钮隐藏放大镜，方便观察图片
+		if(pathView.getVisibility() == View.VISIBLE)
+			pathView.setVisibility(View.GONE);
+		else
+			pathView.setVisibility(View.VISIBLE);
+		
+		return true;
+	}
+  	
 	
 //	void test (String s, int i){
 //		int color = Integer.valueOf(s, 16);
@@ -837,5 +853,5 @@ public class MainActivity extends Activity {
 		ArrayList<Integer> yList;
 		int length = 0;
 	}
-  	
+
 }
