@@ -131,6 +131,11 @@ public class MainActivity extends Activity implements OnLongClickListener{
 					return;
 				}
 				
+				if(colorNew.equals("0"))
+					isColours = false;
+				else
+					isColours = true;
+				
 				if(!TextUtils.isEmpty(colorOld))
 					cs = Integer.valueOf(colorOld, 16);
 				if(cs < 0 || cs > 255)
@@ -592,17 +597,27 @@ public class MainActivity extends Activity implements OnLongClickListener{
 //	    	Bitmap newBitmap = bitmap.copy(Config.ARGB_8888, true);
 	    	Bitmap newBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
 	    	
+	    	if(!isColours){
+		    	for (int x = 1; x < width-1; x++) {
+		    		for (int y = 1; y < height-1; y++) {
+		    			cache[x][y] = isSimilarArea(bitmap, x, y);
+		        		if(cache[x][y] == 1) {
+		        			color = newColor;
+			        		newBitmap.setPixel(x, y, color);
+		        		}
+	//	        		else {
+	//	        			color = 0xffffffff;
+	//	        			newBitmap.setPixel(x, y, color);
+	//	        		}
+		    		}
+		    	}
+		    	return newBitmap;
+	    	}
+	    	
+	    	
 	    	for (int x = 1; x < width-1; x++) {
 	    		for (int y = 1; y < height-1; y++) {
 	    			cache[x][y] = isSimilarArea(bitmap, x, y);
-//	        		if(cache[x][y] == 1) {
-//	        			color = newColor;
-//		        		newBitmap.setPixel(x, y, color);
-//	        		}
-////	        		else {
-////	        			color = 0xffffffff;
-////	        			newBitmap.setPixel(x, y, color);
-////	        		}
 	    		}
 	    	}
 	    	
@@ -644,6 +659,7 @@ public class MainActivity extends Activity implements OnLongClickListener{
 	    	//进行着色
 	    	for (ConnectedArea area : connectedAreaList) {
 	    		if(area.length > limit){
+	    			limitCount ++;
 	    			for(int i = 0;i < area.length; i++) {
 	    				int x = area.xList.get(i);
 	    				int y = area.yList.get(i);
@@ -719,7 +735,8 @@ public class MainActivity extends Activity implements OnLongClickListener{
 			imageView.buildDrawingCache();
 			imageBitmap = imageView.getDrawingCache();
 			editOld.setBackgroundColor(0xffffffff);
-			editNew.setText(""+connectedId);
+			editOld.setText(""+(connectedId-1));
+			editNew.setText(""+limitCount);
 			
 			ShowDialogUtil.closeRainbowProgress();
 		};
@@ -775,6 +792,7 @@ public class MainActivity extends Activity implements OnLongClickListener{
         	return false;
   	}
   	
+  	private boolean isColours = true;//是否彩色再次连通区处理
   	//得限制连通的点数大于一个值才能算是连通区。
   	//也就是累计连通点数大于这个值时，才开始着色，这样会隐藏掉小于这个值的连通点，
   	//但是也会导致大于这个值的连通区缺少前面一部分点。
@@ -844,6 +862,7 @@ public class MainActivity extends Activity implements OnLongClickListener{
     }
 	
 	
+	private int limitCount = 0;//满足连通点大于limit的连通区个数。
 	private ArrayList<ConnectedArea> connectedAreaList = new ArrayList<ConnectedArea>();
 	private ConnectedArea connectedArea;
 	//单个连通区类
