@@ -138,8 +138,8 @@ public class MainActivity extends Activity implements OnLongClickListener{
 				
 				if(!TextUtils.isEmpty(colorOld))
 					cs = Integer.valueOf(colorOld, 16);
-				if(cs < 0 || cs > 255)
-					cs = 0x06;
+				if(cs < 1 || cs > 255)
+					cs = 0x10;
 				int rgbNew = HexStringToInt(colorNew);
 				
 				ShowDialogUtil.showRainbowProgress(context, "处理中");
@@ -408,6 +408,12 @@ public class MainActivity extends Activity implements OnLongClickListener{
 	        cursor.close();
 	        
 	        bitmap = getFileBitmap(picturePath);
+	        
+	        //降低图片分辨率，明显缩短分析时间
+	        int width = 640;
+	        int height = (int) ((double)bitmap.getHeight() / bitmap.getWidth() * width);
+	        bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+	        
 			imageView.setImageBitmap(bitmap);
 	    }
 	}
