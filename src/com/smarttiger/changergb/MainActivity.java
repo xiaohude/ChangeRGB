@@ -611,10 +611,10 @@ public class MainActivity extends Activity implements OnLongClickListener{
 		        			color = newColor;
 			        		newBitmap.setPixel(x, y, color);
 		        		}
-	//	        		else {
-	//	        			color = 0xffffffff;
-	//	        			newBitmap.setPixel(x, y, color);
-	//	        		}
+//		        		else {
+//		        			color = 0xffffffff;
+//		        			newBitmap.setPixel(x, y, color);
+//		        		}
 		    		}
 		    	}
 		    	return newBitmap;
@@ -665,37 +665,49 @@ public class MainActivity extends Activity implements OnLongClickListener{
 	    	//进行着色
 	    	for (ConnectedArea area : connectedAreaList) {
 	    		if(area.length > limit){
+	    			
+	    			double degree = getTan(area);
+	    			area.degree = degree;
+	    			System.out.println("degree============="+degree);
+	    			
+	    			switch (area.connectedId%7 + 2) {
+						case 2:
+			        		color = 0xff00ff00;
+							break;
+						case 3:
+							color = 0xffffff00;
+		    				break;
+						case 4:
+							color = 0xff00ffff;
+		    				break;
+						case 5:
+							color = 0xffff0000;
+		    				break;
+						case 6:
+							color = 0xffff00ff;
+		    				break;
+						case 7:
+							color = 0xff0000ff;
+		    				break;
+						case 8:
+							color = 0xff000000;
+		    				break;
+					}
+	    			
 	    			limitCount ++;
 	    			for(int i = 0;i < area.length; i++) {
 	    				int x = area.xList.get(i);
 	    				int y = area.yList.get(i);
+	    				newBitmap.setPixel(x, y, color);
 	    				
-	    				switch (area.connectedId%7 + 2) {
-							case 2:
-				        		newBitmap.setPixel(x, y, 0xff00ff00);
-								break;
-							case 3:
-			    				newBitmap.setPixel(x, y, 0xffffff00);
-			    				break;
-							case 4:
-			    				newBitmap.setPixel(x, y, 0xff00ffff);
-			    				break;
-							case 5:
-			    				newBitmap.setPixel(x, y, 0xffff0000);
-			    				break;
-							case 6:
-			    				newBitmap.setPixel(x, y, 0xffff00ff);
-			    				break;
-							case 7:
-			    				newBitmap.setPixel(x, y, 0xff0000ff);
-			    				break;
-							case 8:
-			    				newBitmap.setPixel(x, y, 0xff000000);
-			    				break;
-						}
 	    			}
+	    			
+							
 	    		}
 			}
+	    	
+
+			writeDegree(newBitmap, 0, 0, 8, 0xff000000);
 	    	
 	    	//进行着色
 //	    	for (int x = 2; x < width-2; x++) {
@@ -877,6 +889,214 @@ public class MainActivity extends Activity implements OnLongClickListener{
 		ArrayList<Integer> xList;
 		ArrayList<Integer> yList;
 		int length = 0;
+		double degree;
+	}
+	
+	
+	//获取此连通区四个顶点中长边的正切值 ,角度
+	private double getTan0(ConnectedArea connectedArea) {
+		
+		int xMaxX = 0;
+		int yMaxX = 0;
+		
+		int xMaxY = 0;
+		int yMaxY = 0;
+		
+		int xMinX = 1080;
+		int yMinX = 0;
+		
+		int xMinY = 0;
+		int yMinY = 1920;
+		
+		for (int i = 0; i < connectedArea.length; i++) {
+			int x = connectedArea.xList.get(i);
+			int y = connectedArea.yList.get(i);
+			
+			if(x > xMaxX) {
+				xMaxX = x;
+				yMaxX = y;
+			}
+			if(x < xMinX) {
+				xMinX = x;
+				yMinX = y;
+			}
+			if(y > yMaxY) {
+				xMaxY = x;
+				yMaxY = y;
+			}
+			if(y < yMinY) {
+				xMinY = x;
+				yMinY = y;
+			}
+		}
+		
+		double length1 = (xMaxX - xMaxY)*(xMaxX - xMaxY) + (yMaxX - yMaxY)*(yMaxX - yMaxY);
+		double length2 = (xMaxX - xMinY)*(xMaxX - xMinY) + (yMaxX - yMinY)*(yMaxX - yMinY);
+		
+		int x1,y1,x2,y2;
+		
+		x1 = xMaxX;
+		y1 = yMaxX;
+		if(length1 > length2) {
+			x2 = xMaxY;
+			y2 = yMaxY;
+		}
+		else {
+			x2 = xMinY;
+			y2 = yMinY;
+		}
+		
+		if(x1 - x2 == 0) {
+			return 90;
+		}
+//		System.out.println("x1=="+x1+"--y1=="+y1+"--x2=="+x2+"--y2=="+y2);
+		double tan = (double)(y1 - y2) / (x1 - x2);
+//		System.out.println("tan====="+tan);
+		double radian = Math.atan(tan);
+//		System.out.println("radian===="+radian);
+		double degree = Math.toDegrees(radian);
+		
+		return degree;
+		
+//		return 0;
+	}
+	
+	
+	//获取此连通区横切线最长值和纵切线最长值，用这两个值就可以求一矩形连通区正切值，
+	//但是当矩形接近平行或垂直时，此方法就有问题了。
+	//因此采用两个最大间距的切线顶点作为参考求角度。
+	private double getTan(ConnectedArea connectedArea) {
+		
+		int maxDistanceX = 0;
+		
+		int maxDistanceY = 0;
+		
+		ArrayList<Ytangent> yTangentList = new ArrayList<Ytangent>();
+		
+		for (int i = 0; i < connectedArea.length; i++) {
+			int x = connectedArea.xList.get(i);
+			int maxY;
+			int minY;
+			maxY = minY = connectedArea.yList.get(i);
+			
+			for (int j = 0; j < connectedArea.length; j++) {
+				if(connectedArea.xList.get(j) == x)
+				{
+					int y = connectedArea.yList.get(j);
+					if(y > maxY) {
+						maxY = y;
+					}else if(y < minY) {
+						minY = y;
+					}
+//					connectedArea.xList.remove(j);
+//					connectedArea.yList.remove(j);
+//					connectedArea.length--;
+				}
+			}
+			
+			int distanceY = maxY - minY;
+			if(distanceY > maxDistanceY){
+				maxDistanceY = distanceY;
+				yTangentList.clear();
+			}
+			else if(distanceY == maxDistanceY)
+			{
+				Ytangent ytangent = new Ytangent();
+				ytangent.x = x;
+				ytangent.maxY = maxY;
+				ytangent.minY = minY;
+				ytangent.distanceY = distanceY;
+				yTangentList.add(ytangent);
+			}
+		}
+		
+		int maxX = 0;
+		int minX = 1080;
+		int ymaxX = 0;
+		int yminX = 0;
+		for (Ytangent ytangent : yTangentList) {
+			
+//			System.out.println("ytangent.x===="+ytangent.x);
+			
+			if(ytangent.x > maxX) {
+				maxX = ytangent.x;
+				ymaxX = ytangent.maxY;
+			}
+			if(ytangent.x < minX) {
+				minX = ytangent.x;
+				yminX = ytangent.maxY;
+			}
+		}
+		
+//		System.out.println("yTangentList.size======="+yTangentList.size());
+//		System.out.println("ytangent.distanceY========"+yTangentList.get(0).distanceY);
+
+//		System.out.println("maxX=="+maxX+"--ymaxX=="+ymaxX+"--minX=="+minX+"--yminX=="+yminX);
+		
+		double tan = (double)(ymaxX - yminX) / (maxX - minX);
+//		System.out.println("tan====="+tan);
+		double radian = Math.atan(tan);
+//		System.out.println("radian===="+radian);
+		double degree = Math.toDegrees(radian);
+		
+		return degree;
+		
+		
+//		for (int i = 0; i < connectedArea.length; i++) {
+//			int y = connectedArea.yList.get(i);
+//			int maxX;
+//			int minX;
+//			maxX = minX = connectedArea.xList.get(i);
+//			
+//			for (int j = 0; j < connectedArea.length; j++) {
+//				if(connectedArea.yList.get(j) == y)
+//				{
+//					int x = connectedArea.xList.get(j);
+//					if(x > maxX) {
+//						maxX = x;
+//					}else if(x < minX) {
+//						minX = x;
+//					}
+//				}
+//			}
+//			
+//			int distanceX = maxX - minX;
+//			if(distanceX > maxDistanceX)
+//				maxDistanceX = distanceX;
+//		}
+//		
+//		double tan = (double)(maxDistanceY) / (maxDistanceX);
+////		System.out.println("tan====="+tan);
+//		double radian = Math.atan(tan);
+////		System.out.println("radian===="+radian);
+//		double degree = Math.toDegrees(radian);
+//		
+//		return degree;
+		
 	}
 
+	
+	//y方向纵切线
+	class Ytangent {
+		int x;
+		int maxY;
+		int minY;
+		int distanceY;
+	}
+	
+	
+	private void writeDegree(Bitmap bitmap, int x, int y, int degree, int color) {
+		bitmap.setPixel(x+0, y+0, color); bitmap.setPixel(x+1, y+0, color); bitmap.setPixel(x+2, y+0, color); bitmap.setPixel(x+3, y+0, color); bitmap.setPixel(x+4, y+0, color); bitmap.setPixel(x+5, y+0, color);
+		bitmap.setPixel(x+0, y+1, color); bitmap.setPixel(x+1, y+1, color); bitmap.setPixel(x+2, y+1, color); bitmap.setPixel(x+3, y+1, color); bitmap.setPixel(x+4, y+1, color); bitmap.setPixel(x+5, y+1, color);
+		bitmap.setPixel(x+0, y+2, color); bitmap.setPixel(x+1, y+2, color); 																	bitmap.setPixel(x+4, y+2, color); bitmap.setPixel(x+5, y+2, color);
+		bitmap.setPixel(x+0, y+3, color); bitmap.setPixel(x+1, y+3, color); 																	bitmap.setPixel(x+4, y+3, color); bitmap.setPixel(x+5, y+3, color);
+		bitmap.setPixel(x+0, y+4, color); bitmap.setPixel(x+1, y+4, color); bitmap.setPixel(x+2, y+4, color); bitmap.setPixel(x+3, y+4, color); bitmap.setPixel(x+4, y+4, color); bitmap.setPixel(x+5, y+4, color);
+		bitmap.setPixel(x+0, y+5, color); bitmap.setPixel(x+1, y+5, color); bitmap.setPixel(x+2, y+5, color); bitmap.setPixel(x+3, y+5, color); bitmap.setPixel(x+4, y+5, color); bitmap.setPixel(x+5, y+5, color);
+		bitmap.setPixel(x+0, y+6, color); bitmap.setPixel(x+1, y+6, color); 																	bitmap.setPixel(x+4, y+6, color); bitmap.setPixel(x+5, y+6, color);
+		bitmap.setPixel(x+0, y+7, color); bitmap.setPixel(x+1, y+7, color); 																	bitmap.setPixel(x+4, y+7, color); bitmap.setPixel(x+5, y+7, color);
+		bitmap.setPixel(x+0, y+8, color); bitmap.setPixel(x+1, y+8, color); bitmap.setPixel(x+2, y+8, color); bitmap.setPixel(x+3, y+8, color); bitmap.setPixel(x+4, y+8, color); bitmap.setPixel(x+5, y+8, color);
+		bitmap.setPixel(x+0, y+9, color); bitmap.setPixel(x+1, y+9, color); bitmap.setPixel(x+2, y+9, color); bitmap.setPixel(x+3, y+9, color); bitmap.setPixel(x+4, y+9, color); bitmap.setPixel(x+5, y+9, color);
+	}
+	
+	
 }

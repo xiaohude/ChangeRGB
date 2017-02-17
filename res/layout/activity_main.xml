@@ -52,7 +52,7 @@
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
 	        android:layout_weight="1"
-	        android:text="黑白\n显边" />
+	        android:text="边缘\n连通" />
 	    
 	    <Button 
 	        android:id="@+id/test_button"
